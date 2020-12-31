@@ -1,0 +1,284 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+ARCH	infer.py	/^    ARCH = yaml.safe_load(open(FLAGS.model + "\/arch_cfg.yaml", 'r'))$/;"	kind:variable
+ARCH	train.py	/^    ARCH = yaml.safe_load(open(FLAGS.arch_cfg, 'r'))$/;"	kind:variable
+BasicBlock	decoders/darknet.py	/^class BasicBlock(nn.Module):$/;"	kind:class
+CFG	visualize.py	/^    CFG = yaml.safe_load(open(FLAGS.config, 'r'))$/;"	kind:variable
+CRF	postproc/CRF.py	/^class CRF(nn.Module):$/;"	kind:class
+DATA	evaluate_biou.py	/^    DATA = yaml.safe_load(open(FLAGS.data_cfg, 'r'))$/;"	kind:variable
+DATA	evaluate_iou.py	/^    DATA = yaml.safe_load(open(FLAGS.data_cfg, 'r'))$/;"	kind:variable
+DATA	infer.py	/^    DATA = yaml.safe_load(open(FLAGS.model + "\/data_cfg.yaml", 'r'))$/;"	kind:variable
+DATA	train.py	/^    DATA = yaml.safe_load(open(FLAGS.data_cfg, 'r'))$/;"	kind:variable
+DEPLOY_PATH	__init__.py	/^DEPLOY_PATH = "..\/..\/..\/deploy"$/;"	kind:variable
+DEPLOY_PATH	postproc/__init__.py	/^DEPLOY_PATH = "..\/..\/deploy"$/;"	kind:variable
+Decoder	decoders/darknet.py	/^class Decoder(nn.Module):$/;"	kind:class
+Decoder	decoders/squeezeseg.py	/^class Decoder(nn.Module):$/;"	kind:class
+Decoder	decoders/squeezesegV2.py	/^class Decoder(nn.Module):$/;"	kind:class
+EXTENSIONS_LABEL	dataset/kitti/parser.py	/^EXTENSIONS_LABEL = ['.label']$/;"	kind:variable
+EXTENSIONS_SCAN	dataset/kitti/parser.py	/^EXTENSIONS_SCAN = ['.bin']$/;"	kind:variable
+FireUp	decoders/squeezeseg.py	/^class FireUp(nn.Module):$/;"	kind:class
+FireUp	decoders/squeezesegV2.py	/^class FireUp(nn.Module):$/;"	kind:class
+KNN	postproc/KNN.py	/^class KNN(nn.Module):$/;"	kind:class
+LocallyConnectedXYZLayer	postproc/CRF.py	/^class LocallyConnectedXYZLayer(nn.Module):$/;"	kind:class
+Parser	dataset/kitti/parser.py	/^class Parser():$/;"	kind:class
+Segmentator	modules/segmentator.py	/^class Segmentator(nn.Module):$/;"	kind:class
+SemanticKitti	dataset/kitti/parser.py	/^class SemanticKitti(Dataset):$/;"	kind:class
+TRAIN_PATH	__init__.py	/^TRAIN_PATH = "..\/..\/"$/;"	kind:variable
+TRAIN_PATH	postproc/__init__.py	/^TRAIN_PATH = "..\/"$/;"	kind:variable
+Trainer	modules/trainer.py	/^class Trainer():$/;"	kind:class
+User	modules/user.py	/^class User():$/;"	kind:class
+__getitem__	dataset/kitti/parser.py	/^  def __getitem__(self, index):$/;"	kind:member	class:SemanticKitti	file:
+__init__	dataset/kitti/parser.py	/^  def __init__(self, root,    # directory where data is$/;"	kind:member	class:SemanticKitti
+__init__	dataset/kitti/parser.py	/^  def __init__(self,$/;"	kind:member	class:Parser
+__init__	decoders/darknet.py	/^  def __init__(self, inplanes, planes, bn_d=0.1):$/;"	kind:member	class:BasicBlock
+__init__	decoders/darknet.py	/^  def __init__(self, params, stub_skips, OS=32, feature_depth=1024):$/;"	kind:member	class:Decoder
+__init__	decoders/squeezeseg.py	/^  def __init__(self, inplanes, squeeze_planes,$/;"	kind:member	class:FireUp
+__init__	decoders/squeezeseg.py	/^  def __init__(self, params, stub_skips, OS=32, feature_depth=512):$/;"	kind:member	class:Decoder
+__init__	decoders/squeezesegV2.py	/^  def __init__(self, inplanes, squeeze_planes,$/;"	kind:member	class:FireUp
+__init__	decoders/squeezesegV2.py	/^  def __init__(self, params, stub_skips, OS=32, feature_depth=512):$/;"	kind:member	class:Decoder
+__init__	modules/ioueval.py	/^  def __init__(self, n_classes, device, ignore=None):$/;"	kind:member	class:iouEval
+__init__	modules/ioueval.py	/^  def __init__(self, n_classes, device, ignore=None, border_size=1, kern_conn=4):$/;"	kind:member	class:biouEval
+__init__	modules/segmentator.py	/^  def __init__(self, ARCH, nclasses, path=None, path_append="", strict=False):$/;"	kind:member	class:Segmentator
+__init__	modules/trainer.py	/^  def __init__(self, ARCH, DATA, datadir, logdir, path=None):$/;"	kind:member	class:Trainer
+__init__	modules/user.py	/^  def __init__(self, ARCH, DATA, datadir, logdir, modeldir):$/;"	kind:member	class:User
+__init__	postproc/CRF.py	/^  def __init__(self, h, w, sigma, nclasses):$/;"	kind:member	class:LocallyConnectedXYZLayer
+__init__	postproc/CRF.py	/^  def __init__(self, params, nclasses):$/;"	kind:member	class:CRF
+__init__	postproc/KNN.py	/^  def __init__(self, params, nclasses):$/;"	kind:member	class:KNN
+__init__	postproc/borderMask.py	/^  def __init__(self, nclasses, device, border_size, kern_conn=4, background_class=None):$/;"	kind:member	class:borderMask
+__len__	dataset/kitti/parser.py	/^  def __len__(self):$/;"	kind:member	class:SemanticKitti	file:
+_make_dec_layer	decoders/darknet.py	/^  def _make_dec_layer(self, block, planes, bn_d=0.1, stride=2):$/;"	kind:member	class:Decoder
+action	visualize.py	/^      action='store_true',$/;"	kind:variable
+addBatch	modules/ioueval.py	/^  def addBatch(self, x, y):  # x=preds, y=targets$/;"	kind:member	class:iouEval
+addBorderBatch1d	modules/ioueval.py	/^  def addBorderBatch1d(self, range_y, x, y, px, py):$/;"	kind:member	class:biouEval
+argmax	modules/ioueval.py	/^  argmax = torch.zeros((7, 7)).long()$/;"	kind:variable	class:biouEval
+biouEval	modules/ioueval.py	/^class biouEval(iouEval):$/;"	kind:class
+bm	postproc/borderMask.py	/^  bm = borderMask(300, device, FLAGS.border,$/;"	kind:variable	class:borderMask
+borderMask	postproc/borderMask.py	/^class borderMask(nn.Module):$/;"	kind:class
+border_mask	postproc/borderMask.py	/^  border_mask = (border_mask * 255).astype(np.uint8)$/;"	kind:variable	class:borderMask
+border_mask	postproc/borderMask.py	/^  border_mask = bm(proj_sem_label)$/;"	kind:variable	class:borderMask
+border_mask	postproc/borderMask.py	/^  border_mask = border_mask.cpu().numpy().squeeze()$/;"	kind:variable	class:borderMask
+choices	evaluate_biou.py	/^      choices=["train", "valid", "test"],$/;"	kind:variable
+choices	evaluate_iou.py	/^      choices=["train", "valid", "test"],$/;"	kind:variable
+class_ignore	evaluate_biou.py	/^  class_ignore = DATA["learning_ignore"]$/;"	kind:variable
+class_ignore	evaluate_iou.py	/^  class_ignore = DATA["learning_ignore"]$/;"	kind:variable
+class_inv_remap	evaluate_biou.py	/^  class_inv_remap = DATA["learning_map_inv"]$/;"	kind:variable
+class_inv_remap	evaluate_iou.py	/^  class_inv_remap = DATA["learning_map_inv"]$/;"	kind:variable
+class_remap	evaluate_biou.py	/^  class_remap = DATA["learning_map"]$/;"	kind:variable
+class_remap	evaluate_iou.py	/^  class_remap = DATA["learning_map"]$/;"	kind:variable
+class_strings	evaluate_biou.py	/^  class_strings = DATA["labels"]$/;"	kind:variable
+class_strings	evaluate_iou.py	/^  class_strings = DATA["labels"]$/;"	kind:variable
+color_dict	visualize.py	/^    color_dict = CFG["color_map"]$/;"	kind:variable
+default	evaluate_biou.py	/^      default="config\/labels\/semantic-kitti.yaml",$/;"	kind:variable
+default	evaluate_biou.py	/^      default="valid",$/;"	kind:variable
+default	evaluate_biou.py	/^      default=1,$/;"	kind:variable
+default	evaluate_biou.py	/^      default=4,$/;"	kind:variable
+default	evaluate_iou.py	/^      default="config\/labels\/semantic-kitti.yaml",$/;"	kind:variable
+default	evaluate_iou.py	/^      default="valid",$/;"	kind:variable
+default	evaluate_iou.py	/^      default=None,$/;"	kind:variable
+default	infer.py	/^      default=None,$/;"	kind:variable
+default	infer.py	/^      default=os.path.expanduser("~") + '\/logs\/' +$/;"	kind:variable
+default	train.py	/^      default='config\/labels\/semantic-kitti.yaml',$/;"	kind:variable
+default	train.py	/^      default=None,$/;"	kind:variable
+default	train.py	/^      default=os.path.expanduser("~") + '\/logs\/' +$/;"	kind:variable
+default	visualize.py	/^      default="00",$/;"	kind:variable
+default	visualize.py	/^      default="config\/labels\/semantic-kitti.yaml",$/;"	kind:variable
+default	visualize.py	/^      default=0,$/;"	kind:variable
+default	visualize.py	/^      default=False,$/;"	kind:variable
+default	visualize.py	/^      default=None,$/;"	kind:variable
+dest	visualize.py	/^      dest='ignore_safety',$/;"	kind:variable
+dest	visualize.py	/^      dest='ignore_semantics',$/;"	kind:variable
+device	evaluate_biou.py	/^  device = torch.device($/;"	kind:variable
+device	evaluate_iou.py	/^  device = torch.device("cpu")$/;"	kind:variable
+eval	modules/ioueval.py	/^  eval = iouEval(nclasses, torch.device('cpu'), ignore)$/;"	kind:variable	class:biouEval
+evaluator	evaluate_biou.py	/^  evaluator = biouEval(nr_classes, device, ignore,$/;"	kind:variable
+evaluator	evaluate_iou.py	/^  evaluator = iouEval(nr_classes, device, ignore)$/;"	kind:variable
+forward	decoders/darknet.py	/^  def forward(self, x):$/;"	kind:member	class:BasicBlock
+forward	decoders/darknet.py	/^  def forward(self, x, skips):$/;"	kind:member	class:Decoder
+forward	decoders/squeezeseg.py	/^  def forward(self, x):$/;"	kind:member	class:FireUp
+forward	decoders/squeezeseg.py	/^  def forward(self, x, skips):$/;"	kind:member	class:Decoder
+forward	decoders/squeezesegV2.py	/^  def forward(self, x):$/;"	kind:member	class:FireUp
+forward	decoders/squeezesegV2.py	/^  def forward(self, x, skips):$/;"	kind:member	class:Decoder
+forward	modules/segmentator.py	/^  def forward(self, x, mask=None):$/;"	kind:member	class:Segmentator
+forward	postproc/CRF.py	/^  def forward(self, input, softmax, mask):$/;"	kind:member	class:CRF
+forward	postproc/CRF.py	/^  def forward(self, xyz, softmax, mask):$/;"	kind:member	class:LocallyConnectedXYZLayer
+forward	postproc/KNN.py	/^  def forward(self, proj_range, unproj_range, proj_argmax, px, py):$/;"	kind:member	class:KNN
+forward	postproc/borderMask.py	/^  def forward(self, range_label):$/;"	kind:member	class:borderMask
+getIoU	modules/ioueval.py	/^  def getIoU(self):$/;"	kind:member	class:iouEval
+getStats	modules/ioueval.py	/^  def getStats(self):$/;"	kind:member	class:iouEval
+get_gaussian_kernel	postproc/KNN.py	/^def get_gaussian_kernel(kernel_size=3, sigma=2, channels=1):$/;"	kind:function
+get_last_depth	decoders/darknet.py	/^  def get_last_depth(self):$/;"	kind:member	class:Decoder
+get_last_depth	decoders/squeezeseg.py	/^  def get_last_depth(self):$/;"	kind:member	class:Decoder
+get_last_depth	decoders/squeezesegV2.py	/^  def get_last_depth(self):$/;"	kind:member	class:Decoder
+get_mpl_colormap	modules/trainer.py	/^  def get_mpl_colormap(cmap_name):$/;"	kind:member	class:Trainer
+get_n_classes	dataset/kitti/parser.py	/^  def get_n_classes(self):$/;"	kind:member	class:Parser
+get_original_class_string	dataset/kitti/parser.py	/^  def get_original_class_string(self, idx):$/;"	kind:member	class:Parser
+get_test_batch	dataset/kitti/parser.py	/^  def get_test_batch(self):$/;"	kind:member	class:Parser
+get_test_set	dataset/kitti/parser.py	/^  def get_test_set(self):$/;"	kind:member	class:Parser
+get_test_size	dataset/kitti/parser.py	/^  def get_test_size(self):$/;"	kind:member	class:Parser
+get_train_batch	dataset/kitti/parser.py	/^  def get_train_batch(self):$/;"	kind:member	class:Parser
+get_train_set	dataset/kitti/parser.py	/^  def get_train_set(self):$/;"	kind:member	class:Parser
+get_train_size	dataset/kitti/parser.py	/^  def get_train_size(self):$/;"	kind:member	class:Parser
+get_valid_batch	dataset/kitti/parser.py	/^  def get_valid_batch(self):$/;"	kind:member	class:Parser
+get_valid_set	dataset/kitti/parser.py	/^  def get_valid_set(self):$/;"	kind:member	class:Parser
+get_valid_size	dataset/kitti/parser.py	/^  def get_valid_size(self):$/;"	kind:member	class:Parser
+get_xentropy_class_string	dataset/kitti/parser.py	/^  def get_xentropy_class_string(self, idx):$/;"	kind:member	class:Parser
+getacc	modules/ioueval.py	/^  def getacc(self):$/;"	kind:member	class:iouEval
+help	evaluate_biou.py	/^      help='Border size. Defaults to %(default)s',$/;"	kind:variable
+help	evaluate_biou.py	/^      help='Dataset config file. Defaults to %(default)s',$/;"	kind:variable
+help	evaluate_biou.py	/^      help='Dataset dir. No Default',$/;"	kind:variable
+help	evaluate_biou.py	/^      help='Kernel connectivity. Defaults to %(default)s',$/;"	kind:variable
+help	evaluate_biou.py	/^      help='Prediction dir. Same organization as dataset, but predictions in'$/;"	kind:variable
+help	evaluate_biou.py	/^      help='Split to evaluate on. One of ' +$/;"	kind:variable
+help	evaluate_iou.py	/^      help='Dataset config file. Defaults to %(default)s',$/;"	kind:variable
+help	evaluate_iou.py	/^      help='Dataset dir. No Default',$/;"	kind:variable
+help	evaluate_iou.py	/^      help='Limit to the first "--limit" points of each scan. Useful for'$/;"	kind:variable
+help	evaluate_iou.py	/^      help='Prediction dir. Same organization as dataset, but predictions in'$/;"	kind:variable
+help	evaluate_iou.py	/^      help='Split to evaluate on. One of ' +$/;"	kind:variable
+help	infer.py	/^      help='Dataset to train with. No Default',$/;"	kind:variable
+help	infer.py	/^      help='Directory to get the trained model.'$/;"	kind:variable
+help	infer.py	/^      help='Directory to put the predictions. Default: ~\/logs\/date+time'$/;"	kind:variable
+help	train.py	/^      help='Architecture yaml cfg file. See \/config\/arch for sample. No default!',$/;"	kind:variable
+help	train.py	/^      help='Classification yaml cfg file. See \/config\/labels for sample. No default!',$/;"	kind:variable
+help	train.py	/^      help='Dataset to train with. No Default',$/;"	kind:variable
+help	train.py	/^      help='Directory to get the pretrained model. If not passed, do from scratch!'$/;"	kind:variable
+help	train.py	/^      help='Directory to put the log data. Default: ~\/logs\/date+time'$/;"	kind:variable
+help	visualize.py	/^      help='Alternate location for labels, to use predictions folder. '$/;"	kind:variable
+help	visualize.py	/^      help='Dataset config file. Defaults to %(default)s',$/;"	kind:variable
+help	visualize.py	/^      help='Dataset to visualize. No Default',$/;"	kind:variable
+help	visualize.py	/^      help='Ignore semantics. Visualizes uncolored pointclouds.'$/;"	kind:variable
+help	visualize.py	/^      help='Normally you want the number of labels and ptcls to be the same,'$/;"	kind:variable
+help	visualize.py	/^      help='Sequence to start. Defaults to %(default)s',$/;"	kind:variable
+help	visualize.py	/^      help='Sequence to visualize. Defaults to %(default)s',$/;"	kind:variable
+ignore	evaluate_biou.py	/^  ignore = []$/;"	kind:variable
+ignore	evaluate_iou.py	/^  ignore = []$/;"	kind:variable
+ignore	modules/ioueval.py	/^  ignore = []$/;"	kind:variable	class:biouEval
+infer	modules/user.py	/^  def infer(self):$/;"	kind:member	class:User
+infer_subset	modules/user.py	/^  def infer_subset(self, loader, to_orig_fn):$/;"	kind:member	class:User
+instances	visualize.py	/^                     instances=False)$/;"	kind:variable
+iouEval	modules/ioueval.py	/^class iouEval:$/;"	kind:class
+is_label	dataset/kitti/parser.py	/^def is_label(filename):$/;"	kind:function
+is_scan	dataset/kitti/parser.py	/^def is_scan(filename):$/;"	kind:function
+label	evaluate_biou.py	/^    label = SemLaserScan(project=True)$/;"	kind:variable
+label	evaluate_iou.py	/^    label = SemLaserScan(project=False)$/;"	kind:variable
+label_names	evaluate_biou.py	/^  label_names = []$/;"	kind:variable
+label_names	evaluate_iou.py	/^  label_names = []$/;"	kind:variable
+label_names	visualize.py	/^                     label_names=label_names,$/;"	kind:variable
+label_names	visualize.py	/^    label_names = None$/;"	kind:variable
+label_names	visualize.py	/^    label_names = [os.path.join(dp, f) for dp, dn, fn in os.walk($/;"	kind:variable
+label_paths	evaluate_biou.py	/^    label_paths = os.path.join(FLAGS.dataset, "sequences",$/;"	kind:variable
+label_paths	evaluate_iou.py	/^    label_paths = os.path.join(FLAGS.dataset, "sequences",$/;"	kind:variable
+label_paths	visualize.py	/^      label_paths = os.path.join(FLAGS.dataset, "sequences",$/;"	kind:variable
+label_paths	visualize.py	/^      label_paths = os.path.join(FLAGS.predictions, "sequences",$/;"	kind:variable
+lbl	modules/ioueval.py	/^  lbl = torch.zeros((7, 7)).long()$/;"	kind:variable	class:biouEval
+m_acc	modules/ioueval.py	/^  m_acc = eval.getacc()$/;"	kind:variable	class:biouEval
+m_accuracy	evaluate_biou.py	/^  m_accuracy = evaluator.getacc()$/;"	kind:variable
+m_accuracy	evaluate_iou.py	/^  m_accuracy = evaluator.getacc()$/;"	kind:variable
+m_jaccard	evaluate_biou.py	/^                                          m_jaccard=m_jaccard))$/;"	kind:variable
+m_jaccard	evaluate_iou.py	/^                                         m_jaccard=m_jaccard))$/;"	kind:variable
+make_log_img	modules/trainer.py	/^  def make_log_img(depth, mask, pred, gt, color_fn):$/;"	kind:member	class:Trainer
+map	dataset/kitti/parser.py	/^  def map(label, mapdict):$/;"	kind:member	class:SemanticKitti
+maxkey	evaluate_biou.py	/^      maxkey = key$/;"	kind:variable
+maxkey	evaluate_biou.py	/^  maxkey = 0$/;"	kind:variable
+maxkey	evaluate_iou.py	/^      maxkey = key$/;"	kind:variable
+maxkey	evaluate_iou.py	/^  maxkey = 0$/;"	kind:variable
+nclasses	modules/ioueval.py	/^  nclasses = 2$/;"	kind:variable	class:biouEval
+nr_classes	evaluate_biou.py	/^  nr_classes = len(class_inv_remap)$/;"	kind:variable
+nr_classes	evaluate_iou.py	/^  nr_classes = len(class_inv_remap)$/;"	kind:variable
+num_classes	modules/ioueval.py	/^  def num_classes(self):$/;"	kind:member	class:iouEval
+offset	visualize.py	/^                     offset=FLAGS.offset,$/;"	kind:variable
+p_label_sem	evaluate_biou.py	/^    p_label_sem = remap_lut[label.proj_sem_label]  # remap to xentropy format$/;"	kind:variable
+parser	evaluate_biou.py	/^  parser = argparse.ArgumentParser(".\/evaluate_biou.py")$/;"	kind:variable
+parser	evaluate_iou.py	/^  parser = argparse.ArgumentParser(".\/evaluate_iou.py")$/;"	kind:variable
+parser	infer.py	/^  parser = argparse.ArgumentParser(".\/infer.py")$/;"	kind:variable
+parser	postproc/borderMask.py	/^  parser = argparse.ArgumentParser(".\/borderMask.py")$/;"	kind:variable	class:borderMask
+parser	train.py	/^  parser = argparse.ArgumentParser(".\/train.py")$/;"	kind:variable
+parser	visualize.py	/^  parser = argparse.ArgumentParser(".\/visualize.py")$/;"	kind:variable
+pred	evaluate_biou.py	/^    pred = SemLaserScan(project=True)$/;"	kind:variable
+pred	evaluate_iou.py	/^    pred = SemLaserScan(project=False)$/;"	kind:variable
+pred_names	evaluate_biou.py	/^  pred_names = []$/;"	kind:variable
+pred_names	evaluate_iou.py	/^  pred_names = []$/;"	kind:variable
+pred_paths	evaluate_biou.py	/^    pred_paths = os.path.join(FLAGS.predictions, "sequences",$/;"	kind:variable
+pred_paths	evaluate_iou.py	/^    pred_paths = os.path.join(FLAGS.predictions, "sequences",$/;"	kind:variable
+proj_range	postproc/borderMask.py	/^  proj_range = (proj_range \/ proj_range.max() * 255).astype(np.uint8)$/;"	kind:variable	class:borderMask
+proj_range	postproc/borderMask.py	/^  proj_range = proj_range.cpu().numpy()$/;"	kind:variable	class:borderMask
+proj_range	postproc/borderMask.py	/^  proj_range = torch.from_numpy(scan.proj_range).to(device)$/;"	kind:variable	class:borderMask
+proj_sem_color	postproc/borderMask.py	/^  proj_sem_color = proj_sem_color.cpu().numpy()$/;"	kind:variable	class:borderMask
+proj_sem_color	postproc/borderMask.py	/^  proj_sem_color = torch.from_numpy(scan.proj_sem_color).to(device)$/;"	kind:variable	class:borderMask
+proj_sem_label	postproc/borderMask.py	/^  proj_sem_label = proj_sem_label.cpu().numpy()$/;"	kind:variable	class:borderMask
+proj_sem_label	postproc/borderMask.py	/^  proj_sem_label = torch.from_numpy(scan.proj_sem_label).long().to(device)$/;"	kind:variable	class:borderMask
+remap_lut	evaluate_biou.py	/^  remap_lut = np.zeros((maxkey + 100), dtype=np.int32)$/;"	kind:variable
+remap_lut	evaluate_iou.py	/^  remap_lut = np.zeros((maxkey + 100), dtype=np.int32)$/;"	kind:variable
+required	evaluate_biou.py	/^      required=False,$/;"	kind:variable
+required	evaluate_biou.py	/^      required=None,$/;"	kind:variable
+required	evaluate_biou.py	/^      required=True,$/;"	kind:variable
+required	evaluate_iou.py	/^      required=False,$/;"	kind:variable
+required	evaluate_iou.py	/^      required=None,$/;"	kind:variable
+required	evaluate_iou.py	/^      required=True,$/;"	kind:variable
+required	infer.py	/^      required=True,$/;"	kind:variable
+required	train.py	/^      required=False,$/;"	kind:variable
+required	train.py	/^      required=True,$/;"	kind:variable
+required	visualize.py	/^      required=False,$/;"	kind:variable
+required	visualize.py	/^      required=True,$/;"	kind:variable
+reset	modules/ioueval.py	/^  def reset(self):$/;"	kind:member	class:biouEval
+reset	modules/ioueval.py	/^  def reset(self):$/;"	kind:member	class:iouEval
+run_layer	decoders/darknet.py	/^  def run_layer(self, x, layer, skips, os):$/;"	kind:member	class:Decoder
+run_layer	decoders/squeezeseg.py	/^  def run_layer(self, x, layer, skips, os):$/;"	kind:member	class:Decoder
+run_layer	decoders/squeezesegV2.py	/^  def run_layer(self, x, layer, skips, os):$/;"	kind:member	class:Decoder
+save_checkpoint	modules/segmentator.py	/^  def save_checkpoint(self, logdir, suffix=""):$/;"	kind:member	class:Segmentator
+save_to_log	modules/trainer.py	/^  def save_to_log(logdir, logger, info, epoch, w_summary=False, model=None, img_summary=False, imgs=[]):$/;"	kind:member	class:Trainer
+scan	postproc/borderMask.py	/^  scan = SemLaserScan(project=True, max_classes=300)$/;"	kind:variable	class:borderMask
+scan	visualize.py	/^    scan = LaserScan(project=True)  # project all opened scans to spheric proj$/;"	kind:variable
+scan	visualize.py	/^    scan = SemLaserScan(color_dict, project=True)$/;"	kind:variable
+scan_names	evaluate_biou.py	/^  scan_names = []$/;"	kind:variable
+scan_names	evaluate_iou.py	/^  scan_names = []$/;"	kind:variable
+scan_names	visualize.py	/^                     scan_names=scan_names,$/;"	kind:variable
+scan_names	visualize.py	/^  scan_names = [os.path.join(dp, f) for dp, dn, fn in os.walk($/;"	kind:variable
+scan_paths	evaluate_biou.py	/^    scan_paths = os.path.join(FLAGS.dataset, "sequences",$/;"	kind:variable
+scan_paths	evaluate_iou.py	/^    scan_paths = os.path.join(FLAGS.dataset, "sequences",$/;"	kind:variable
+scan_paths	visualize.py	/^  scan_paths = os.path.join(FLAGS.dataset, "sequences",$/;"	kind:variable
+semantics	visualize.py	/^                     semantics=semantics,$/;"	kind:variable
+semantics	visualize.py	/^  semantics = not FLAGS.ignore_semantics$/;"	kind:variable
+seq	infer.py	/^      seq = '{0:02d}'.format(int(seq))$/;"	kind:variable
+seq_label_names	evaluate_biou.py	/^    seq_label_names = [os.path.join(dp, f) for dp, dn, fn in os.walk($/;"	kind:variable
+seq_label_names	evaluate_iou.py	/^    seq_label_names = [os.path.join(dp, f) for dp, dn, fn in os.walk($/;"	kind:variable
+seq_pred_names	evaluate_biou.py	/^    seq_pred_names = [os.path.join(dp, f) for dp, dn, fn in os.walk($/;"	kind:variable
+seq_pred_names	evaluate_iou.py	/^    seq_pred_names = [os.path.join(dp, f) for dp, dn, fn in os.walk($/;"	kind:variable
+seq_scan_names	evaluate_biou.py	/^    seq_scan_names = [os.path.join(dp, f) for dp, dn, fn in os.walk($/;"	kind:variable
+seq_scan_names	evaluate_iou.py	/^    seq_scan_names = [os.path.join(dp, f) for dp, dn, fn in os.walk($/;"	kind:variable
+sequence	evaluate_biou.py	/^    sequence = '{0:02d}'.format(int(sequence))$/;"	kind:variable
+sequence	evaluate_iou.py	/^    sequence = '{0:02d}'.format(int(sequence))$/;"	kind:variable
+splits	evaluate_biou.py	/^splits = ["train", "valid", "test"]$/;"	kind:variable
+splits	evaluate_iou.py	/^splits = ["train", "valid", "test"]$/;"	kind:variable
+test_sequences	evaluate_biou.py	/^  test_sequences = DATA["split"][FLAGS.split]$/;"	kind:variable
+test_sequences	evaluate_iou.py	/^  test_sequences = DATA["split"][FLAGS.split]$/;"	kind:variable
+to_color	dataset/kitti/parser.py	/^  def to_color(self, label):$/;"	kind:member	class:Parser
+to_original	dataset/kitti/parser.py	/^  def to_original(self, label):$/;"	kind:member	class:Parser
+to_xentropy	dataset/kitti/parser.py	/^  def to_xentropy(self, label):$/;"	kind:member	class:Parser
+train	modules/trainer.py	/^  def train(self):$/;"	kind:member	class:Trainer
+train_epoch	modules/trainer.py	/^  def train_epoch(self, train_loader, model, criterion, optimizer, epoch, evaluator, scheduler, color_fn, report=10, show_scans=False):$/;"	kind:member	class:Trainer
+trainer	train.py	/^  trainer = Trainer(ARCH, DATA, FLAGS.dataset, FLAGS.log, FLAGS.pretrained)$/;"	kind:variable
+type	evaluate_biou.py	/^      type=int,$/;"	kind:variable
+type	evaluate_biou.py	/^      type=str,$/;"	kind:variable
+type	evaluate_iou.py	/^      type=int,$/;"	kind:variable
+type	evaluate_iou.py	/^      type=str,$/;"	kind:variable
+type	infer.py	/^      type=str,$/;"	kind:variable
+type	train.py	/^      type=str,$/;"	kind:variable
+type	visualize.py	/^      type=int,$/;"	kind:variable
+type	visualize.py	/^      type=str,$/;"	kind:variable
+u_label_sem	evaluate_biou.py	/^    u_label_sem = remap_lut[label.sem_label]  # remap to xentropy format$/;"	kind:variable
+u_label_sem	evaluate_iou.py	/^      u_label_sem = u_label_sem[:FLAGS.limit]$/;"	kind:variable
+u_label_sem	evaluate_iou.py	/^    u_label_sem = remap_lut[label.sem_label]  # remap to xentropy format$/;"	kind:variable
+u_pred_sem	evaluate_biou.py	/^    u_pred_sem = remap_lut[pred.sem_label]  # remap to xentropy format$/;"	kind:variable
+u_pred_sem	evaluate_iou.py	/^      u_pred_sem = u_pred_sem[:FLAGS.limit]$/;"	kind:variable
+u_pred_sem	evaluate_iou.py	/^    u_pred_sem = remap_lut[pred.sem_label]  # remap to xentropy format$/;"	kind:variable
+u_scan_px	evaluate_biou.py	/^    u_scan_px = label.proj_x$/;"	kind:variable
+u_scan_py	evaluate_biou.py	/^    u_scan_py = label.proj_y$/;"	kind:variable
+user	infer.py	/^  user = User(ARCH, DATA, FLAGS.dataset, FLAGS.log, FLAGS.model)$/;"	kind:variable
+validate	modules/trainer.py	/^  def validate(self, val_loader, model, criterion, evaluator, class_func, color_fn, save_scans):$/;"	kind:member	class:Trainer
+vis	visualize.py	/^  vis = LaserScanVis(scan=scan,$/;"	kind:variable
+x_cl	evaluate_biou.py	/^      x_cl = int(cl)$/;"	kind:variable
+x_cl	evaluate_iou.py	/^      x_cl = int(cl)$/;"	kind:variable

@@ -1,0 +1,9 @@
+#!/bin/bash
+# This file is covered by the LICENSE file in the root of this project.
+docker build -t pcw-net --build-arg uid=$(id -g) --build-arg gid=$(id -g) .
+docker run --privileged \
+       -ti --rm -e DISPLAY=$DISPLAY \
+       -v /tmp/.X11-unix:/tmp/.X11-unix \
+       --net=host \
+       -v $1:/home/developer/data/ \
+       pcw-net

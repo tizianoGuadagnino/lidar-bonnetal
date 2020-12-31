@@ -1,20 +1,78 @@
-## Fork by Tiziano Guadagnino
+# LiDAR-Bonnetal Semantic Segmentation Training
 
-I made this fork to extend the lidar-bonnetal package to pixel-wise regression
-
-# LiDAR-Bonnetal
-
-Semantic Segmentation of point clouds using range images.
-
-Developed by [Andres Milioto](http://www.ipb.uni-bonn.de/people/andres-milioto/), [Jens Behley](http://www.ipb.uni-bonn.de/people/jens-behley/), [Ignacio Vizzo](http://www.ipb.uni-bonn.de/people/ignacio-vizzo/), and [Cyrill Stachniss](http://www.ipb.uni-bonn.de/people/cyrill-stachniss/)
+This part of the framework deals with the training of semantic segmentation networks for point cloud data using range images. This code allows to reproduce the experiments from the [RangeNet++](http://www.ipb.uni-bonn.de/wp-content/papercite-data/pdf/milioto2019iros.pdf) paper
 
 _Examples of segmentation results from [SemanticKITTI](http://semantic-kitti.org) dataset:_
-![ptcl](pics/semantic-ptcl.gif)
-![ptcl](pics/semantic-proj.gif)
+![ptcl](../../../pics/semantic-ptcl.gif)
+![ptcl](../../../pics/semantic-proj.gif)
 
-## Description
+## Configuration files
 
-This code provides code to train and deploy Semantic Segmentation of LiDAR scans, using range images as intermediate representation. The training pipeline can be found in [/train](train/). We will open-source the deployment pipeline soon.
+Architecture configuration files are located at [config/arch](config/arch/)
+Dataset configuration files are located at [config/labels](config/labels/)
+
+## Apps
+
+`ALL SCRIPTS CAN BE INVOKED WITH -h TO GET EXTRA HELP ON HOW TO RUN THEM`
+
+### Visualization
+
+To visualize the data (in this example sequence 00):
+
+```sh
+$ ./visualize.py -d /path/to/dataset/ -s 00
+```
+
+To visualize the predictions (in this example sequence 00):
+
+```sh
+$ ./visualize.py -d /path/to/dataset/ -p /path/to/predictions/ -s 00
+```
+
+### Training
+
+To train a network (from scratch):
+
+```sh
+$ ./train.py -d /path/to/dataset -ac /config/arch/CHOICE.yaml -l /path/to/log
+```
+
+To train a network (from pretrained model):
+
+```
+$ ./train.py -d /path/to/dataset -ac /config/arch/CHOICE.yaml -dc /config/labels/CHOICE.yaml -l /path/to/log -p /path/to/pretrained
+```
+
+This will generate a tensorboard log, which can be visualized by running:
+
+```sh
+$ cd /path/to/log
+$ tensorboard --logdir=. --port 5555
+```
+
+And acccessing [http://localhost:5555](http://localhost:5555) in your browser.
+
+### Inference
+
+To infer the predictions for the entire dataset:
+
+```sh
+$ ./infer.py -d /path/to/dataset/ -l /path/for/predictions -m /path/to/model
+````
+
+### Evaluation
+
+To evaluate the overall IoU of the point clouds (of a specific split, which in semantic kitti can only be train and valid, since test is only run in our evaluation server):
+
+```sh
+$ ./evaluate_iou.py -d /path/to/dataset -p /path/to/predictions/ --split valid
+```
+
+To evaluate the border IoU of the point clouds (introduced in RangeNet++ paper):
+
+```sh
+$ ./evaluate_biou.py -d /path/to/dataset -p /path/to/predictions/ --split valid --border 1 --conn 4
+```
 
 ## Pre-trained Models
 
@@ -54,22 +112,6 @@ With k-NN processing:
 - [darknet21](http://www.ipb.uni-bonn.de/html/projects/bonnetal/lidar/semantic/predictions/darknet21-knn.tar.gz)
 - [darknet53-1024](http://www.ipb.uni-bonn.de/html/projects/bonnetal/lidar/semantic/predictions/darknet53-1024-knn.tar.gz)
 - [darknet53-512](http://www.ipb.uni-bonn.de/html/projects/bonnetal/lidar/semantic/predictions/darknet53-512-knn.tar.gz)
-
-## License
-
-### LiDAR-Bonnetal: MIT
-
-Copyright 2019, Andres Milioto, Jens Behley, Cyrill Stachniss. University of Bonn.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-### Pretrained models: Model and Dataset Dependent
-
-The pretrained models with a specific dataset maintain the copyright of such dataset.
 
 ## Citations
 
