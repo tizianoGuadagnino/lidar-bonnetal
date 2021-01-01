@@ -70,7 +70,7 @@ class Kitti(Dataset):
 
       # check all scans have labels
       if self.gt:
-        assert(len(scan_files) == len(label_files))
+        assert(len(scan_files) == len(mask_files))
 
       # extend list
       self.scan_files.extend(scan_files)
@@ -98,42 +98,42 @@ class Kitti(Dataset):
 
     # open and obtain scan
     scan.open_scan(scan_file)
-    if self.gt:
-      depth_image = np.copy(scan.proj_range)
-      rows = depth_image.shape[0]
-      cols = depth_image.shape[1]
-      row_gap = 1
-      col_gap = 1
-      max_range = 80
-      normal_image = np.zeros((rows, cols,3))
-      for r in range(row_gap,rows-row_gap):
-          for c in range(col_gap,cols-col_gap):
-              if depth_image[r,c] > max_range:
-                  continue
-              if depth_image[r+row_gap,c] < 0 or depth_image[r-row_gap,c] < 0:
-                  continue
-              if depth_image[r,c+col_gap] < 0 or depth_image[r,c-col_gap] < 0:
-                  continue
-              dx = depth_image[r+row_gap,c] - depth_image[r-row_gap,c]
-              dy = depth_image[r,c+col_gap] - depth_image[r,c-col_gap]
-              d = np.array([-dx,-dy,1])
-              normal = d/np.linalg.norm(d)
-              p = self.scan.proj_xyz[r,c]
-              if np.dot(normal,p) > 0:
-                  normal *= -1
-              normal_image[r,c] = normal
-        
-      curvature_image = np.full(depth_image.shape, -1, dtype=np.float32)
-      for r in range(row_gap,rows-row_gap):
-          for c in range(col_gap,cols-col_gap):
-              dnx = normal_image[r+self.row_gap,c] - normal_image[r-self.row_gap,c]
-              dny = normal_image[r,c+self.col_gap] - normal_image[r,c-self.col_gap]
-              if np.linalg.norm(normal_image[r+1,c]) < 1e-3 or np.linalg.norm(normal_image[r-1,c]) < 1e-3:
-                  continue
-              if np.linalg.norm(normal_image[r,c+1]) < 1e-3 or np.linalg.norm(normal_image[r,c-1]) < 1e-3:
-                  continue
-              squared_curvature = np.linalg.norm(dnx)**2 + np.linalg.norm(dny)**2
-              curvature_image[r,c] = np.sqrt(squared_curvature)
+    # if self.gt:
+    depth_image = np.copy(scan.proj_range)
+    rows = depth_image.shape[0]
+    cols = depth_image.shape[1]
+    row_gap = 1
+    col_gap = 1
+    max_range = 80
+    normal_image = np.zeros((rows, cols,3))
+    for r in range(row_gap,rows-row_gap):
+        for c in range(col_gap,cols-col_gap):
+            if depth_image[r,c] > max_range:
+                continue
+            if depth_image[r+row_gap,c] < 0 or depth_image[r-row_gap,c] < 0:
+                continue
+            if depth_image[r,c+col_gap] < 0 or depth_image[r,c-col_gap] < 0:
+                continue
+            dx = depth_image[r+row_gap,c] - depth_image[r-row_gap,c]
+            dy = depth_image[r,c+col_gap] - depth_image[r,c-col_gap]
+            d = np.array([-dx,-dy,1])
+            normal = d/np.linalg.norm(d)
+            p = self.scan.proj_xyz[r,c]
+            if np.dot(normal,p) > 0:
+                normal *= -1
+            normal_image[r,c] = normal
+      
+    curvature_image = np.full(depth_image.shape, -1, dtype=np.float32)
+    for r in range(row_gap,rows-row_gap):
+        for c in range(col_gap,cols-col_gap):
+            dnx = normal_image[r+self.row_gap,c] - normal_image[r-self.row_gap,c]
+            dny = normal_image[r,c+self.col_gap] - normal_image[r,c-self.col_gap]
+            if np.linalg.norm(normal_image[r+1,c]) < 1e-3 or np.linalg.norm(normal_image[r-1,c]) < 1e-3:
+                continue
+            if np.linalg.norm(normal_image[r,c+1]) < 1e-3 or np.linalg.norm(normal_image[r,c-1]) < 1e-3:
+                continue
+            squared_curvature = np.linalg.norm(dnx)**2 + np.linalg.norm(dny)**2
+            curvature_image[r,c] = np.sqrt(squared_curvature)
     # make a tensor of the uncompressed data (with the max num points)
     unproj_n_points = scan.points.shape[0]
     unproj_xyz = torch.full((self.max_points, 3), -1.0, dtype=torch.float)
@@ -251,12 +251,8 @@ class Parser():
     self.nclasses = len(self.learning_map_inv)
 
     # Data loading code
-    self.train_dataset = SemanticKitti(root=self.root,
+    self.train_dataset = Kitti(root=self.root,
                                        sequences=self.train_sequences,
-                                       labels=self.labels,
-                                       color_map=self.color_map,
-                                       learning_map=self.learning_map,
-                                       learning_map_inv=self.learning_map_inv,
                                        sensor=self.sensor,
                                        max_points=max_points,
                                        gt=self.gt)
@@ -270,12 +266,8 @@ class Parser():
     assert len(self.trainloader) > 0
     self.trainiter = iter(self.trainloader)
 
-    self.valid_dataset = SemanticKitti(root=self.root,
+    self.valid_dataset = Kitti(root=self.root,
                                        sequences=self.valid_sequences,
-                                       labels=self.labels,
-                                       color_map=self.color_map,
-                                       learning_map=self.learning_map,
-                                       learning_map_inv=self.learning_map_inv,
                                        sensor=self.sensor,
                                        max_points=max_points,
                                        gt=self.gt)

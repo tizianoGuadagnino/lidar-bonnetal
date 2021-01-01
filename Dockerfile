@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -yqq  build-essential ninja-build \
   libtool mlocate zlib1g-dev python python3-numpy python3-wheel wget \
   software-properties-common openjdk-8-jdk libpng-dev  \
   libxft-dev vim meld sudo ffmpeg python3-pip libboost-all-dev \
-  libyaml-cpp-dev git -y && updatedb
+  libyaml-cpp-dev git python3-tk -y && updatedb
 
 RUN mkdir -p /home/developer && \
     cp /etc/skel/.bashrc /home/developer/.bashrc && \

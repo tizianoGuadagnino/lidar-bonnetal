@@ -22,8 +22,7 @@ from common.logger import Logger
 from common.avgmeter import *
 from common.sync_batchnorm.batchnorm import convert_model
 from common.warmupLR import *
-from tasks.semantic.modules.segmentator import *
-from tasks.semantic.modules.ioueval import *
+from tasks.mask_regression.modules.segmentator import *
 
 
 class Trainer():
