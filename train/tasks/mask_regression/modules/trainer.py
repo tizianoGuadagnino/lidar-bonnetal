@@ -200,7 +200,6 @@ class Trainer():
                                                      criterion=self.criterion,
                                                      optimizer=self.optimizer,
                                                      epoch=epoch,
-                                                     evaluator=self.evaluator,
                                                      scheduler=self.scheduler,
                                                      color_fn=self.parser.to_color,
                                                      report=self.ARCH["train"]["report_batch"],
@@ -215,7 +214,6 @@ class Trainer():
         loss, rand_img = self.validate(val_loader=self.parser.get_valid_set(),
                                                  model=self.model,
                                                  criterion=self.criterion,
-                                                 evaluator=self.evaluator,
                                                  class_func=self.parser.get_xentropy_class_string,
                                                  color_fn=self.parser.to_color,
                                                  save_scans=self.ARCH["train"]["save_scans"])
@@ -247,7 +245,7 @@ class Trainer():
 
     return
 
-  def train_epoch(self, train_loader, model, criterion, optimizer, epoch, evaluator, scheduler, color_fn, report=10, show_scans=False):
+  def train_epoch(self, train_loader, model, criterion, optimizer, epoch, scheduler, color_fn, report=10, show_scans=False):
     batch_time = AverageMeter()
     data_time = AverageMeter()
     losses = AverageMeter()
@@ -268,7 +266,7 @@ class Trainer():
         in_vol = in_vol.cuda()
         proj_mask = proj_mask.cuda()
       if self.gpu:
-        proj_weights = proj_weights.cuda(non_blocking=True).long()
+        proj_weights = proj_weights.cuda(non_blocking=True)
 
       # compute output
       output = model(in_vol, proj_mask)
@@ -286,8 +284,6 @@ class Trainer():
       # measure accuracy and record loss
       loss = loss.mean()
       # with torch.no_grad():
-      evaluator.reset()
-        # evaluator.addBatch(output, proj_weights)
       losses.update(loss.item(), in_vol.size(0))
       # measure elapsed time
       batch_time.update(time.time() - end)
@@ -335,14 +331,13 @@ class Trainer():
 
     return losses.avg, update_ratio_meter.avg
 
-  def validate(self, val_loader, model, criterion, evaluator, class_func, color_fn, save_scans):
+  def validate(self, val_loader, model, criterion,  class_func, color_fn, save_scans):
     batch_time = AverageMeter()
     losses = AverageMeter()
     rand_imgs = []
 
     # switch to evaluate mode
     model.eval()
-    evaluator.reset()
 
     # empty the cache to infer in high res
     if self.gpu:

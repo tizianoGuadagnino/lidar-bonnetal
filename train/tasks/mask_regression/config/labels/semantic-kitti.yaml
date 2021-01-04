@@ -186,27 +186,8 @@ learning_ignore: # Ignore classes
   19: False    # "traffic-sign"
 split: # sequence numbers
   train:
-    - 0
     - 1
-    - 2
-    - 3
-    - 4
-    - 5
-    - 6
-    - 7
-    - 9
-    - 10
   valid:
-    - 8
+    - 1
   test:
-    - 11
-    - 12
-    - 13
-    - 14
-    - 15
-    - 16
-    - 17
-    - 18
-    - 19
-    - 20
-    - 21
+    - 1

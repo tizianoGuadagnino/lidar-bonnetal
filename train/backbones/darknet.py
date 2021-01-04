@@ -52,6 +52,8 @@ class Backbone(nn.Module):
     self.use_range = params["input_depth"]["range"]
     self.use_xyz = params["input_depth"]["xyz"]
     self.use_remission = params["input_depth"]["remission"]
+    self.use_normals = params["input_depth"]["normals"]
+    self.use_curvature = params["input_depth"]["curvature"]
     self.drop_prob = params["dropout"]
     self.bn_d = params["bn_d"]
     self.OS = params["OS"]
@@ -70,6 +72,12 @@ class Backbone(nn.Module):
     if self.use_remission:
       self.input_depth += 1
       self.input_idxs.append(4)
+    if self.use_normals:
+      self.input_depth += 3
+      self.input_idxs.extend([5,6,7])
+    if self.use_curvature:
+      self.input_depth += 1
+      self.input_idxs.append(8)
     print("Depth of backbone input = ", self.input_depth)
 
     # stride play

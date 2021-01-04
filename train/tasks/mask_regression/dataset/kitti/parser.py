@@ -74,7 +74,7 @@ class Kitti(Dataset):
 
       # extend list
       self.scan_files.extend(scan_files)
-      self.label_files.extend(mask_files)
+      self.mask_files.extend(mask_files)
 
     # sort for correspondance
     self.scan_files.sort()
@@ -90,6 +90,7 @@ class Kitti(Dataset):
       mask_file = self.mask_files[index]
     
     mask = np.load(mask_file)
+    mask = np.expand_dims(mask, axis=0)
     scan = LaserScan(project=True,
                    H=self.sensor_img_H,
                    W=self.sensor_img_W,
@@ -118,7 +119,7 @@ class Kitti(Dataset):
             dy = depth_image[r,c+col_gap] - depth_image[r,c-col_gap]
             d = np.array([-dx,-dy,1])
             normal = d/np.linalg.norm(d)
-            p = self.scan.proj_xyz[r,c]
+            p = scan.proj_xyz[r,c]
             if np.dot(normal,p) > 0:
                 normal *= -1
             normal_image[r,c] = normal
@@ -126,8 +127,8 @@ class Kitti(Dataset):
     curvature_image = np.full(depth_image.shape, -1, dtype=np.float32)
     for r in range(row_gap,rows-row_gap):
         for c in range(col_gap,cols-col_gap):
-            dnx = normal_image[r+self.row_gap,c] - normal_image[r-self.row_gap,c]
-            dny = normal_image[r,c+self.col_gap] - normal_image[r,c-self.col_gap]
+            dnx = normal_image[r+row_gap,c] - normal_image[r-row_gap,c]
+            dny = normal_image[r,c+col_gap] - normal_image[r,c-col_gap]
             if np.linalg.norm(normal_image[r+1,c]) < 1e-3 or np.linalg.norm(normal_image[r-1,c]) < 1e-3:
                 continue
             if np.linalg.norm(normal_image[r,c+1]) < 1e-3 or np.linalg.norm(normal_image[r,c-1]) < 1e-3:
@@ -147,10 +148,13 @@ class Kitti(Dataset):
     # get points and labels
     proj_range = torch.from_numpy(scan.proj_range).clone()
     proj_normals = torch.from_numpy(normal_image).clone()
+    proj_normals = proj_normals.type(torch.FloatTensor)
     proj_curvature = torch.from_numpy(curvature_image).clone()
+    proj_curvature = proj_curvature.type(torch.FloatTensor)
     proj_xyz = torch.from_numpy(scan.proj_xyz).clone()
     proj_remission = torch.from_numpy(scan.proj_remission).clone()
-    proj_mask = torch.from_numpy(scan.proj_mask)
+    proj_mask = torch.from_numpy(scan.proj_mask).clone()
+    proj_mask = proj_mask.type(torch.FloatTensor)
     if self.gt:
       proj_labels = torch.from_numpy(mask).clone()
       proj_labels = proj_labels * proj_mask
@@ -166,7 +170,7 @@ class Kitti(Dataset):
     proj_normalized = (proj_normalized - self.sensor_img_means[:, None, None]
             ) / self.sensor_img_stds[:, None, None]
     proj = torch.cat([proj_normalized,
-                      proj_normals.unsqueeze(0).clone(),
+                      proj_normals.clone().permute(2,0,1),
                       proj_curvature.unsqueeze(0).clone()])
 
     proj = proj * proj_mask.float()

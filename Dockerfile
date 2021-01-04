@@ -34,18 +34,25 @@ RUN pip3 install numpy==1.14.0 \
                  matplotlib==2.2.3 \
                  tensorflow==1.13.1 \
                  scipy==0.19.1 \
-                 torch==1.1.0 \
+                 # torch==1.1.0 \
                  vispy==0.5.3 \
                  opencv_python==4.1.0.25 \
                  opencv_contrib_python==4.1.0.25 \
                  Pillow==6.1.0 \
                  PyYAML==5.1.1
+RUN git clone --recursive https://github.com/tano297/pytorch
+RUN cd pytorch && python3 setup.py install && cd ..
+RUN cd pytorch && \
+  cp -r torch/include/* /usr/local/include && \
+  cp -r torch/lib/* /usr/local/lib && \
+  cp -r torch/share/* /usr/local/share && \
+  cd .. && rm -r pytorch
 # clean the cache
 RUN apt update && \
   apt autoremove --purge -y && \
   apt clean -y
-# Set the working directory to the api location
-WORKDIR /home/developer/
+# Set the working directory
+WORKDIR /home/developer/pcw-net
 # make user and home
 USER developer
 ENV HOME /home/developer

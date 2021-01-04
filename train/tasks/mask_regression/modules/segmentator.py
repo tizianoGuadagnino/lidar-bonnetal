@@ -121,7 +121,7 @@ class MaskRegressor(nn.Module):
     y, skips = self.backbone(x)
     y = self.decoder(y, skips)
     y = self.head(y)
-    y = F.sigmoid(y)
+    y = torch.sigmoid(y)
     return y
 
   def save_checkpoint(self, logdir, suffix=""):
