@@ -90,6 +90,8 @@ class Kitti(Dataset):
       mask_file = self.mask_files[index]
     
     mask = np.load(mask_file)
+    mask[mask>0.5] = 1
+    mask[mask<=0.5] = 0
     mask = np.expand_dims(mask, axis=0)
     scan = LaserScan(project=True,
                    H=self.sensor_img_H,
@@ -154,7 +156,7 @@ class Kitti(Dataset):
     proj_xyz = torch.from_numpy(scan.proj_xyz).clone()
     proj_remission = torch.from_numpy(scan.proj_remission).clone()
     proj_mask = torch.from_numpy(scan.proj_mask).clone()
-    proj_mask = proj_mask.type(torch.FloatTensor)
+    # proj_mask = proj_mask.type(torch.FloatTensor)
     if self.gt:
       proj_labels = torch.from_numpy(mask).clone()
       proj_labels = proj_labels * proj_mask

@@ -47,6 +47,7 @@ class MaskRegressor(nn.Module):
                                         1, kernel_size=3,
                                         stride=1, padding=1))
 
+    self.activation = nn.Sigmoid()
     # train backbone?
     if not self.ARCH["backbone"]["train"]:
       for w in self.backbone.parameters():
@@ -121,7 +122,7 @@ class MaskRegressor(nn.Module):
     y, skips = self.backbone(x)
     y = self.decoder(y, skips)
     y = self.head(y)
-    y = torch.sigmoid(y)
+    # y = self.activation(y)
     return y
 
   def save_checkpoint(self, logdir, suffix=""):

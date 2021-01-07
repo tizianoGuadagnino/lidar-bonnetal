@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -yqq  build-essential ninja-build \
   libtool mlocate zlib1g-dev python python3-numpy python3-wheel wget \
   software-properties-common openjdk-8-jdk libpng-dev  \
   libxft-dev vim meld sudo ffmpeg python3-pip libboost-all-dev \
-  libyaml-cpp-dev git python3-tk -y && updatedb
+  libyaml-cpp-dev git python3-tk libomp-dev -y && updatedb
 
 RUN mkdir -p /home/developer && \
     cp /etc/skel/.bashrc /home/developer/.bashrc && \
@@ -40,7 +40,12 @@ RUN pip3 install numpy==1.14.0 \
                  opencv_contrib_python==4.1.0.25 \
                  Pillow==6.1.0 \
                  PyYAML==5.1.1
-RUN git clone --recursive https://github.com/tano297/pytorch
+ENV USE_CUDA 1
+ENV USE_CUDNN 1
+ENV USE_MKLDNN 1
+RUN git clone --recursive https://github.com/pytorch/pytorch.git
+RUN cd pytorch/third_party/ideep/ &&  wget https://github.com/oneapi-src/oneDNN/archive/v1.8-rc.tar.gz && \
+  tar xfz v1.8-rc.tar.gz && rm -rf mkl-dnn/* && mv oneDNN-1.8-rc/* mkl-dnn && cd ../../
 RUN cd pytorch && python3 setup.py install && cd ..
 RUN cd pytorch && \
   cp -r torch/include/* /usr/local/include && \

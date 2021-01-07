@@ -23,6 +23,7 @@ from common.avgmeter import *
 from common.sync_batchnorm.batchnorm import convert_model
 from common.warmupLR import *
 from tasks.mask_regression.modules.segmentator import *
+from tasks.mask_regression.modules.ioueval import *
 
 
 class Trainer():
@@ -95,7 +96,9 @@ class Trainer():
 
     # loss
     if "loss" in self.ARCH["train"].keys() and self.ARCH["train"]["loss"] == "xentropy":
-      self.criterion = nn.MSELoss().to(self.device)
+      w = torch.zeros(1,dtype=torch.float)
+      w[0] = 1e2
+      self.criterion = nn.BCEWithLogitsLoss(pos_weight=w).to(self.device)
     else:
       raise Exception('Loss not defined in config file')
     # loss as dataparallel too (more images in batch)
@@ -187,6 +190,7 @@ class Trainer():
     # best validation loss so far
     best_val_loss = 0
 
+    self.evaluator = Evaluator(self.device)
     # train for n epochs
     for epoch in range(self.ARCH["train"]["max_epochs"]):
       # get info for learn rate currently
@@ -198,6 +202,7 @@ class Trainer():
       loss, update_mean = self.train_epoch(train_loader=self.parser.get_train_set(),
                                                      model=self.model,
                                                      criterion=self.criterion,
+                                                     evaluator=self.evaluator,
                                                      optimizer=self.optimizer,
                                                      epoch=epoch,
                                                      scheduler=self.scheduler,
@@ -214,6 +219,7 @@ class Trainer():
         loss, rand_img = self.validate(val_loader=self.parser.get_valid_set(),
                                                  model=self.model,
                                                  criterion=self.criterion,
+                                                 evaluator=self.evaluator,
                                                  class_func=self.parser.get_xentropy_class_string,
                                                  color_fn=self.parser.to_color,
                                                  save_scans=self.ARCH["train"]["save_scans"])
@@ -245,10 +251,13 @@ class Trainer():
 
     return
 
-  def train_epoch(self, train_loader, model, criterion, optimizer, epoch, scheduler, color_fn, report=10, show_scans=False):
+  def train_epoch(self, train_loader, model, criterion, evaluator, optimizer, epoch, scheduler, color_fn, report=10, show_scans=False):
     batch_time = AverageMeter()
     data_time = AverageMeter()
     losses = AverageMeter()
+    f1 = AverageMeter()
+    precision = AverageMeter()
+    recall = AverageMeter()
     update_ratio_meter = AverageMeter()
 
     # empty the cache to train now
@@ -259,18 +268,18 @@ class Trainer():
     model.train()
 
     end = time.time()
-    for i, (in_vol, proj_mask, proj_weights, _, path_seq, path_name, _, _, _, _, _, _, _, _, _) in enumerate(train_loader):
+    for i, (in_vol, proj_mask, proj_labels, _, path_seq, path_name, _, _, _, _, _, _, _, _, _) in enumerate(train_loader):
         # measure data loading time
       data_time.update(time.time() - end)
       if not self.multi_gpu and self.gpu:
         in_vol = in_vol.cuda()
         proj_mask = proj_mask.cuda()
       if self.gpu:
-        proj_weights = proj_weights.cuda(non_blocking=True)
+        proj_labels = proj_labels.cuda(non_blocking=True)
 
       # compute output
       output = model(in_vol, proj_mask)
-      loss = criterion(output, proj_weights)
+      loss = criterion(output, proj_labels)
 
       # compute gradient and do SGD step
       optimizer.zero_grad()
@@ -283,8 +292,15 @@ class Trainer():
 
       # measure accuracy and record loss
       loss = loss.mean()
-      # with torch.no_grad():
+      with torch.no_grad():
+        evaluator.reset()
+        pred = (torch.sigmoid(output) > 0.5).long()
+        evaluator.addBatch(pred, proj_labels)
+        p, r, f = evaluator.getScores()
       losses.update(loss.item(), in_vol.size(0))
+      precision.update(p.item(), in_vol.size(0))
+      recall.update(r.item(), in_vol.size(0))
+      f1.update(f.item(), in_vol.size(0))
       # measure elapsed time
       batch_time.update(time.time() - end)
       end = time.time()
@@ -310,7 +326,7 @@ class Trainer():
         mask_np = proj_mask[0].cpu().numpy()
         depth_np = in_vol[0][0].cpu().numpy()
         pred_np = output[0].cpu().numpy()
-        gt_np = proj_weights[0].cpu().numpy()
+        gt_np = proj_labels[0].cpu().numpy()
         out = Trainer.make_log_img(depth_np, mask_np, pred_np, gt_np, color_fn)
         cv2.imshow("sample_training", out)
         cv2.waitKey(1)
@@ -320,20 +336,25 @@ class Trainer():
               'Update: {umean:.3e} mean,{ustd:.3e} std | '
               'Epoch: [{0}][{1}/{2}] | '
               'Time {batch_time.val:.3f} ({batch_time.avg:.3f}) | '
-              'Data {data_time.val:.3f} ({data_time.avg:.3f}) | '
-              'Loss {loss.val:.4f} ({loss.avg:.4f}) | '.format(
+              'Loss {loss.val:.4f} ({loss.avg:.4f}) | '
+              'precision {precision.val:.3f} ({precision.avg:.3f}) | '
+              'recall {recall.val:.3f} ({recall.avg:.3f}) | '
+              'f1 score {f1.val:.3f} ({f1.avg:.3f})'.format(
                   epoch, i, len(train_loader), batch_time=batch_time,
-                  data_time=data_time, loss=losses, lr=lr,
-                  umean=update_mean, ustd=update_std))
+                  loss=losses, precision=precision, recall=recall, f1=f1,
+                  lr=lr, umean=update_mean, ustd=update_std))
 
       # step scheduler
       scheduler.step()
 
     return losses.avg, update_ratio_meter.avg
 
-  def validate(self, val_loader, model, criterion,  class_func, color_fn, save_scans):
+  def validate(self, val_loader, model, criterion, evaluator, class_func, color_fn, save_scans):
     batch_time = AverageMeter()
     losses = AverageMeter()
+    f1 = AverageMeter()
+    precision = AverageMeter()
+    recall = AverageMeter()
     rand_imgs = []
 
     # switch to evaluate mode
@@ -345,19 +366,19 @@ class Trainer():
 
     with torch.no_grad():
       end = time.time()
-      for i, (in_vol, proj_mask, proj_weights, _, path_seq, path_name, _, _, _, _, _, _, _, _, _) in enumerate(val_loader):
+      for i, (in_vol, proj_mask, proj_labels, _, path_seq, path_name, _, _, _, _, _, _, _, _, _) in enumerate(val_loader):
         if not self.multi_gpu and self.gpu:
           in_vol = in_vol.cuda()
           proj_mask = proj_mask.cuda()
         if self.gpu:
-          proj_weights = proj_weights.cuda(non_blocking=True).long()
+          proj_labels = proj_labels.cuda(non_blocking=True)
 
         # compute output
         output = model(in_vol, proj_mask)
-        loss = criterion(output, proj_weights)
-
+        loss = criterion(output, proj_labels)
+        pred = (torch.sigmoid(output) > 0.5).long()
         # measure accuracy and record loss
-        # evaluator.addBatch(output, proj_weights)
+        evaluator.addBatch(pred, proj_labels)
         losses.update(loss.mean().item(), in_vol.size(0))
 
         if save_scans:
@@ -365,20 +386,30 @@ class Trainer():
           mask_np = proj_mask[0].cpu().numpy()
           depth_np = in_vol[0][0].cpu().numpy()
           pred_np = output[0].cpu().numpy()
-          gt_np = proj_weights[0].cpu().numpy()
-          out = Trainer.make_log_img(depth_np,
-                                     mask_np,
-                                     pred_np,
-                                     gt_np,
-                                     color_fn)
-          rand_imgs.append(out)
+          gt_np = proj_labels[0].cpu().numpy()
+          # out = Trainer.make_log_img(depth_np,
+          #                            mask_np,
+          #                            pred_np,
+          #                            gt_np,
+          #                            color_fn)
+          # rand_imgs.append(out)
 
         # measure elapsed time
         batch_time.update(time.time() - end)
         end = time.time()
 
+      p, r, f = evaluator.getScores()
+      f1.update(f.item(), in_vol.size(0))
+      precision.update(p.item(), in_vol.size(0))
+      recall.update(r.item(), in_vol.size(0))
       print('Validation set:\n'
             'Time avg per batch {batch_time.avg:.3f}\n'
-            'Loss avg {loss.avg:.4f}\n'.format(batch_time=batch_time,
-                                           loss=losses))
+            'Loss avg {loss.avg:.4f}\n'
+            'Precision avg {precision.avg:.4f}'
+            'Recall avg {recall.avg:.4f}'
+            'F1 Score {f1.avg:.4f}'.format(batch_time=batch_time,
+                                           loss=losses,
+                                           precision=precision,
+                                           recall=recall,
+                                           f1=f1))
     return losses.avg, rand_imgs
