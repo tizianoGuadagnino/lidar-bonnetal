@@ -5,25 +5,20 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from collections import OrderedDict
-from encoder import *
-from decoder import *
+from modules.encoder import *
+from modules.decoder import *
 
 class RangeMaskNet(nn.Module):
   def __init__(self, ARCH, path=None, path_append=""):
     super().__init__()
     self.ARCH = ARCH
-    encoder_params = self.ARCH["encoder"]
-    decoder_params = self.ARCH["decoder"]
-    self.backbone = DenseEncoder()
-    self.decoder = DenseDecoder()
+    encoder_params = self.ARCH["backbone"]["params"]
+    decoder_params = self.ARCH["decoder"]["params"]
+    self.backbone = DenseEncoder(encoder_params)
+    self.decoder = DenseDecoder(decoder_params, 2*self.backbone.last_depth)
     self.head = nn.Sequential(nn.Dropout2d(p=0.1),
                               nn.Conv2d(self.decoder.last_depth, 1, kernel_size=3, stride=1, padding=1))
     self.activation = nn.Sigmoid()
-    if torch.cuda.is_available():
-      stub = stub.cuda()
-      self.backbone.cuda()
-    _, stub_skips = self.backbone(stub)
-
     # train backbone?
     if not self.ARCH["backbone"]["train"]:
       for w in self.backbone.parameters():
@@ -95,11 +90,13 @@ class RangeMaskNet(nn.Module):
       print("No path to pretrained, using random init.")
 
   def forward(self, x, mask=None):
-    prev_scan_encoded = self.backbone(x[0])
-    curr_scan_encoded = self.backbone(x[1])
-    y = prev_scan_encoded - curr_scan_encoded
+    encoded_prev_scan = self.backbone(x[0])
+    encoded_curr_scan = self.backbone(x[1])
+    y = torch.cat([encoded_prev_scan, encoded_curr_scan], 1)
     y = self.decoder(y)
     y = self.head(y)
+    y = self.activation(y)
+    y = mask * y
     return y
 
   def save_checkpoint(self, logdir, suffix=""):

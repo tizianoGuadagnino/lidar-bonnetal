@@ -10,7 +10,7 @@ import os
 import shutil
 import __init__ as booger
 
-from tasks.mask_regression.modules.trainer import *
+from modules.trainer import *
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser("./train.py")

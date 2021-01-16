@@ -2,14 +2,13 @@
 # training parameters
 ################################################################################
 train:
-  loss: "xentropy"       # must be either xentropy or iou
   max_epochs: 150
   lr: 0.005              # sgd learning rate
   wup_epochs: 1          # warmup during first XX epochs (can be float)
   momentum: 0.9          # sgd momentum
   lr_decay: 0.99         # learning rate decay per epoch after initial cycle (from min lr)
   w_decay: 0.0001        # weight decay
-  batch_size: 2          # batch size
+  batch_size: 4          # batch size
   report_batch: 1        # every x batches, report loss
   report_epoch: 1        # every x epochs, report validation set
   epsilon_w: 0.001       # class weight w = 1 / (content + epsilon_w)
@@ -24,29 +23,36 @@ train:
 # backbone parameters
 ################################################################################
 backbone:
-  name: "darknet"  # ['squeezeseg', 'squeezesegV2', 'darknet']
-  input_depth:
-    range: True
-    xyz: True
-    remission: True
-    normals: True
-    curvature: True
-  dropout: 0.01
-  bn_d: 0.01
-  OS: 32 # output stride (only horizontally)
-  train: False # train backbone?
-  extra:
-    layers: 21
+  name: "dense_encoder"
+  params:
+    input_depth: 5
+    drop_rate: 0.01
+    bn_size: 4
+    growth_rate: 8
+    num_init_features: 32
+    block_configuration: 
+    - 3
+    - 3
+    - 3
+  train: True # train backbone?
 
 ################################################################################
 # decoder parameters
 ################################################################################
 decoder:
-  name: "darknet"
-  dropout: 0.01
-  bn_d: 0.01
+  name: "dense_decoder"
+  params:
+    drop_rate: 0.01
+    bn_size: 4
+    growth_rate: 8
+    block_configuration: 
+    - 3
+    - 3
+    - 3
+    - 3
+    - 3
+    - 3
   train: True # train decoder?
-  extra: False
 
 ################################################################################
 # classification head parameters
@@ -54,23 +60,7 @@ decoder:
 head:
   name: "prediction"
   train: True
-  dropout: 0.01
-
-################################################################################
-# postproc parameters
-################################################################################
-post:
-  CRF: 
-    use: False
-    train: True
-    params: False # this should be a dict when in use
-  KNN:
-    use: False
-    params:
-      knn: 5
-      search: 5
-      sigma: 1.0 
-      cutoff: 1.0
+  drop_rate: 0.01
 
 ################################################################################
 # classification head parameters
