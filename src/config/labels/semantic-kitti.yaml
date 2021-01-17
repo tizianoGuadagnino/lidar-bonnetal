@@ -2,8 +2,8 @@
 name: "kitti"
 split: # sequence numbers
   train:
-    - 1
+    - 0
   valid:
-    - 1
+    - 0
   test:
-    - 1
+    - 0

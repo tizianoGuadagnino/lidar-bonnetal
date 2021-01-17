@@ -89,9 +89,9 @@ class Trainer():
       self.n_gpus = torch.cuda.device_count()
 
     # loss
-    # w = torch.zeros(1,dtype=torch.float)
-    # w[0] = 1e2
-    self.criterion = nn.BCELoss().to(self.device)
+    w = torch.zeros(1,dtype=torch.float)
+    w[0] = 22.00
+    self.criterion = nn.BCEWithLogitsLoss(pos_weight=w).to(self.device)
     # loss as dataparallel too (more images in batch)
     if self.n_gpus > 1:
       self.criterion = nn.DataParallel(self.criterion).cuda()  # spread in gpus
@@ -115,18 +115,22 @@ class Trainer():
     self.optimizer = optim.SGD(self.train_dicts,
                                lr=self.ARCH["train"]["lr"],
                                momentum=self.ARCH["train"]["momentum"],
-                               weight_decay=self.ARCH["train"]["w_decay"])
+                               weight_decay=self.ARCH["train"]["w_decay"],
+                               nesterov=self.ARCH["train"]["nesterov"])
 
     # Use warmup learning rate
     # post decay and step sizes come in epochs and we want it in steps
     steps_per_epoch = self.parser.get_train_size()
-    up_steps = int(self.ARCH["train"]["wup_epochs"] * steps_per_epoch)
-    final_decay = self.ARCH["train"]["lr_decay"] ** (1/steps_per_epoch)
-    self.scheduler = warmupLR(optimizer=self.optimizer,
-                              lr=self.ARCH["train"]["lr"],
-                              warmup_steps=up_steps,
-                              momentum=self.ARCH["train"]["momentum"],
-                              decay=final_decay)
+    self.scheduler = optim.lr_scheduler.CosineAnnealingLR(self.optimizer, 
+                                                          T_max=self.ARCH["train"]["T_max"], 
+                                                          eta_min=self.ARCH["train"]["lr_min"])
+    # up_steps = int(self.ARCH["train"]["wup_epochs"] * steps_per_epoch)
+    # final_decay = self.ARCH["train"]["lr_decay"] ** (1/steps_per_epoch)
+    # self.scheduler = warmupLR(optimizer=self.optimizer,
+    #                           lr=self.ARCH["train"]["lr"],
+    #                           warmup_steps=up_steps,
+    #                           momentum=self.ARCH["train"]["momentum"],
+    #                           decay=final_decay)
 
   @staticmethod
   def get_mpl_colormap(cmap_name):
@@ -179,7 +183,7 @@ class Trainer():
 
   def train(self):
     # best validation loss so far
-    best_val_loss = 0
+    best_f1_score = 0
 
     self.evaluator = Evaluator(self.device)
     # train for n epochs
@@ -277,10 +281,9 @@ class Trainer():
       optimizer.step()
 
       # measure accuracy and record loss
-      loss = loss.mean()
       with torch.no_grad():
         evaluator.reset()
-        pred = (output > 0.5).long()
+        pred = (model.activation(output) > 0.5).long()
         evaluator.addBatch(pred, proj_labels)
         p, r, f = evaluator.getScores()
       batch_size = in_vol[0].size(0)
@@ -363,11 +366,11 @@ class Trainer():
         # compute output
         output = model(in_vol, proj_mask)
         loss = criterion(output, proj_labels)
-        pred = (output > 0.5).long()
+        pred = (model.activation(output) > 0.5).long()
         # measure accuracy and record loss
         evaluator.addBatch(pred, proj_labels)
         batch_size = in_vol[0].size(0)
-        losses.update(loss.mean().item(), batch_size)
+        losses.update(loss.item(), batch_size)
 
         # if save_scans:
           # get the first scan in batch and project points
@@ -387,14 +390,17 @@ class Trainer():
         end = time.time()
 
       p, r, f1 = evaluator.getScores()
+      accuracy = evaluator.getacc()
       print('Validation set:\n'
             'Time avg per batch {batch_time.avg:.3f}\n'
             'Loss avg {loss.avg:.4f}\n'
             'Precision {precision:.4f}\n'
             'Recall {recall:.4f}\n'
-            'F1 Score {f1:.4f}'.format(batch_time=batch_time,
+            'F1 Score {f1:.4f}\n'
+            'Accuracy {acc:.4f}'.format(batch_time=batch_time,
                                            loss=losses,
                                            precision=p,
                                            recall=r,
-                                           f1=f1))
+                                           f1=f1,
+                                           acc=accuracy))
     return losses.avg, f1, rand_imgs

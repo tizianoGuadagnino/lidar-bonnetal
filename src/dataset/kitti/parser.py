@@ -35,6 +35,7 @@ class Kitti(Dataset):
                                         dtype=torch.float)
     self.sensor_fov_up = sensor["fov_up"]
     self.sensor_fov_down = sensor["fov_down"]
+    self.max_range = sensor["max_range"]
     self.max_points = max_points
     self.gt = gt
 
@@ -102,7 +103,9 @@ class Kitti(Dataset):
 
     # open and obtain scan
     scan.open_scan(prev_scan_file)
-    proj_range_prev = torch.from_numpy(scan.proj_range).clone()
+    depth_prev = scan.proj_range
+    depth_prev[depth_prev > self.max_range] = 0
+    proj_range_prev = torch.from_numpy(depth_prev).clone()
     proj_xyz_prev = torch.from_numpy(scan.proj_xyz).clone()
     proj_remission_prev = torch.from_numpy(scan.proj_remission).clone()
     proj_prev = torch.cat([proj_range_prev.unsqueeze(0).clone(),
@@ -113,7 +116,9 @@ class Kitti(Dataset):
     proj_prev = proj_prev * proj_mask_prev.float()
 
     scan.open_scan(curr_scan_file)
-    proj_range_curr = torch.from_numpy(scan.proj_range).clone()
+    depth_curr = scan.proj_range
+    depth_curr[depth_prev > self.max_range] = 0
+    proj_range_curr = torch.from_numpy(depth_curr).clone()
     proj_xyz_curr = torch.from_numpy(scan.proj_xyz).clone()
     proj_remission_curr = torch.from_numpy(scan.proj_remission).clone()
     proj_curr = torch.cat([proj_range_prev.unsqueeze(0).clone(),
@@ -173,10 +178,10 @@ class Parser():
 
     # Data loading code
     self.train_dataset = Kitti(root=self.root,
-                                       sequences=self.train_sequences,
-                                       sensor=self.sensor,
-                                       max_points=max_points,
-                                       gt=self.gt)
+                               sequences=self.train_sequences,
+                               sensor=self.sensor,
+                               max_points=max_points,
+                               gt=self.gt)
 
     self.trainloader = torch.utils.data.DataLoader(self.train_dataset,
                                                    batch_size=self.batch_size,
@@ -184,6 +189,7 @@ class Parser():
                                                    num_workers=self.workers,
                                                    pin_memory=True,
                                                    drop_last=True)
+    print(len(self.trainloader))
     assert len(self.trainloader) > 0
     self.trainiter = iter(self.trainloader)
 

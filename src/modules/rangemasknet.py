@@ -16,7 +16,7 @@ class RangeMaskNet(nn.Module):
     decoder_params = self.ARCH["decoder"]["params"]
     self.backbone = DenseEncoder(encoder_params)
     self.decoder = DenseDecoder(decoder_params, 2*self.backbone.last_depth)
-    self.head = nn.Sequential(nn.Dropout2d(p=0.1),
+    self.head = nn.Sequential(nn.Dropout2d(p=self.ARCH["head"]["drop_rate"]),
                               nn.Conv2d(self.decoder.last_depth, 1, kernel_size=3, stride=1, padding=1))
     self.activation = nn.Sigmoid()
     # train backbone?
@@ -95,7 +95,7 @@ class RangeMaskNet(nn.Module):
     y = torch.cat([encoded_prev_scan, encoded_curr_scan], 1)
     y = self.decoder(y)
     y = self.head(y)
-    y = self.activation(y)
+    # y = self.activation(y)
     y = mask * y
     return y
 
