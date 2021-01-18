@@ -103,9 +103,7 @@ class Kitti(Dataset):
 
     # open and obtain scan
     scan.open_scan(prev_scan_file)
-    depth_prev = scan.proj_range
-    depth_prev[depth_prev > self.max_range] = 0
-    proj_range_prev = torch.from_numpy(depth_prev).clone()
+    proj_range_prev = torch.from_numpy(scan.proj_range).clone()
     proj_xyz_prev = torch.from_numpy(scan.proj_xyz).clone()
     proj_remission_prev = torch.from_numpy(scan.proj_remission).clone()
     proj_prev = torch.cat([proj_range_prev.unsqueeze(0).clone(),
@@ -113,12 +111,10 @@ class Kitti(Dataset):
                            proj_remission_prev.unsqueeze(0).clone()])
     proj_prev = (proj_prev- self.sensor_img_means[:, None, None]) / self.sensor_img_stds[:, None, None]
     proj_mask_prev = torch.from_numpy(scan.proj_mask).unsqueeze(0).clone()
-    proj_prev = proj_prev * proj_mask_prev.float()
+    # proj_prev = proj_prev * proj_mask_prev.float()
 
     scan.open_scan(curr_scan_file)
-    depth_curr = scan.proj_range
-    depth_curr[depth_prev > self.max_range] = 0
-    proj_range_curr = torch.from_numpy(depth_curr).clone()
+    proj_range_curr = torch.from_numpy(scan.proj_range).clone()
     proj_xyz_curr = torch.from_numpy(scan.proj_xyz).clone()
     proj_remission_curr = torch.from_numpy(scan.proj_remission).clone()
     proj_curr = torch.cat([proj_range_prev.unsqueeze(0).clone(),
@@ -127,10 +123,10 @@ class Kitti(Dataset):
     proj_curr = (proj_curr- self.sensor_img_means[:, None, None]) / self.sensor_img_stds[:, None, None]
 
     proj_mask = torch.from_numpy(scan.proj_mask).unsqueeze(0).clone()
-    proj_curr = proj_curr * proj_mask.float()
+    # proj_curr = proj_curr * proj_mask.float()
     if self.gt:
       proj_labels = torch.from_numpy(mask).float().clone()
-      proj_labels = proj_labels * proj_mask
+      # proj_labels = proj_labels * proj_mask
     else:
       proj_labels = []
 

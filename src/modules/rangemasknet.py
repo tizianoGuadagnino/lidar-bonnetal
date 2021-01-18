@@ -10,12 +10,12 @@ from modules.decoder import *
 
 class RangeMaskNet(nn.Module):
   def __init__(self, ARCH, path=None, path_append=""):
-    super().__init__()
+    super(RangeMaskNet, self).__init__()
     self.ARCH = ARCH
     encoder_params = self.ARCH["backbone"]["params"]
     decoder_params = self.ARCH["decoder"]["params"]
     self.backbone = DenseEncoder(encoder_params)
-    self.decoder = DenseDecoder(decoder_params, 2*self.backbone.last_depth)
+    self.decoder = DenseDecoder(decoder_params, self.backbone.last_depth)
     self.head = nn.Sequential(nn.Dropout2d(p=self.ARCH["head"]["drop_rate"]),
                               nn.Conv2d(self.decoder.last_depth, 1, kernel_size=3, stride=1, padding=1))
     self.activation = nn.Sigmoid()
@@ -90,12 +90,12 @@ class RangeMaskNet(nn.Module):
       print("No path to pretrained, using random init.")
 
   def forward(self, x, mask=None):
-    encoded_prev_scan = self.backbone(x[0])
-    encoded_curr_scan = self.backbone(x[1])
-    y = torch.cat([encoded_prev_scan, encoded_curr_scan], 1)
+    # y = x[1] - x[0]
+    y = torch.cat(x,1)
+    y = self.backbone(y)
     y = self.decoder(y)
     y = self.head(y)
-    # y = self.activation(y)
+    y = self.activation(y)
     y = mask * y
     return y
 

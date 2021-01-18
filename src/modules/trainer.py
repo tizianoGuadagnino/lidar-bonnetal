@@ -23,6 +23,7 @@ from utils.avgmeter import *
 from utils.warmupLR import *
 from modules.rangemasknet import *
 from modules.evaluator import *
+from modules.focalloss import *
 
 
 class Trainer():
@@ -89,9 +90,10 @@ class Trainer():
       self.n_gpus = torch.cuda.device_count()
 
     # loss
-    w = torch.zeros(1,dtype=torch.float)
-    w[0] = 22.00
-    self.criterion = nn.BCEWithLogitsLoss(pos_weight=w).to(self.device)
+    # w = torch.tensor(22.00)
+    # gamma = torch.tensor(2.00)
+    self.criterion = FocalLoss(alpha=22., gamma=2.).to(self.device)
+    # self.criterion = FocalLoss().to(self.device)
     # loss as dataparallel too (more images in batch)
     if self.n_gpus > 1:
       self.criterion = nn.DataParallel(self.criterion).cuda()  # spread in gpus
@@ -142,21 +144,20 @@ class Trainer():
     return color_range.reshape(256, 1, 3)
 
   @staticmethod
-  def make_log_img(depth, mask, pred, gt, color_fn):
+  def make_log_img(depth, pred, gt):
     # input should be [depth, pred, gt]
     # make range image (normalized to 0,1 for saving)
-    depth = (cv2.normalize(depth, None, alpha=0, beta=1,
-                           norm_type=cv2.NORM_MINMAX,
-                           dtype=cv2.CV_32F) * 255.0).astype(np.uint8)
-    out_img = cv2.applyColorMap(
-        depth, Trainer.get_mpl_colormap('viridis')) * mask[..., None]
-    # make label prediction
-    pred_color = color_fn((pred * mask).astype(np.int32))
-    out_img = np.concatenate([out_img, pred_color], axis=0)
-    # make label gt
-    gt_color = color_fn(gt)
-    out_img = np.concatenate([out_img, gt_color], axis=0)
-    return (out_img).astype(np.uint8)
+    # depth = (cv2.normalize(depth, None, alpha=0, beta=1,
+    #                        norm_type=cv2.NORM_MINMAX,
+    #                        dtype=cv2.CV_32F) * 255.0).astype(np.uint8)
+    # # make label prediction
+    # pred = (pred * 255.0).astype(np.uint8)
+    # out_img = np.concatenate([depth[None, :, :], pred], axis=0)
+    # # make label gt
+    # gt = (gt * 255.0).astype(np.uint8)
+    # out_img = np.concatenate([out_img, gt], axis=0)
+    pred = (pred[0,:,:] * 255.0).astype(np.uint8)
+    return pred
 
   @staticmethod
   def save_to_log(logdir, logger, info, epoch, w_summary=False, model=None, img_summary=False, imgs=[]):
@@ -217,6 +218,7 @@ class Trainer():
 
         # update info
         self.info["valid_loss"] = loss
+        self.info["valid_iou"] = f1
         # remember best iou and save checkpoint
         if f1 > best_f1_score:
           print("Best f1 score in validation so far, save model!")
@@ -283,7 +285,8 @@ class Trainer():
       # measure accuracy and record loss
       with torch.no_grad():
         evaluator.reset()
-        pred = (model.activation(output) > 0.5).long()
+        # pred = (model.activation(output) > 0.5).long()
+        pred = (output > 0.5).long()
         evaluator.addBatch(pred, proj_labels)
         p, r, f = evaluator.getScores()
       batch_size = in_vol[0].size(0)
@@ -366,24 +369,23 @@ class Trainer():
         # compute output
         output = model(in_vol, proj_mask)
         loss = criterion(output, proj_labels)
-        pred = (model.activation(output) > 0.5).long()
+        # pred = (model.activation(output) > 0.5).long()
+        pred = (output > 0.5).long()
         # measure accuracy and record loss
         evaluator.addBatch(pred, proj_labels)
         batch_size = in_vol[0].size(0)
         losses.update(loss.item(), batch_size)
 
-        # if save_scans:
+        if save_scans:
           # get the first scan in batch and project points
           # mask_np = proj_mask[0].cpu().numpy()
-          # depth_np = in_vol[0][0].cpu().numpy()
-          # pred_np = output[0].cpu().numpy()
-          # gt_np = proj_labels[0].cpu().numpy()
-          # out = Trainer.make_log_img(depth_np,
-          #                            mask_np,
-          #                            pred_np,
-          #                            gt_np,
-          #                            color_fn)
-          # rand_imgs.append(out)
+          depth_np = in_vol[0][0][0].cpu().numpy()
+          pred_np = output[0].cpu().numpy()
+          gt_np = proj_labels[0].cpu().numpy()
+          out = Trainer.make_log_img(depth_np,
+                                     pred_np,
+                                     gt_np) 
+          rand_imgs.append(out)
 
         # measure elapsed time
         batch_time.update(time.time() - end)

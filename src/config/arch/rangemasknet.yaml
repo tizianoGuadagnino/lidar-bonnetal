@@ -2,10 +2,10 @@
 # training parameters
 ################################################################################
 train:
-  max_epochs: 150
+  max_epochs: 450
   lr: 0.01              # sgd learning rate
-  lr_min: 0.0001       # min learning rate for cosing anneling shedule
-  T_max: 10             # number of epoch before warm restart
+  lr_min: 0.001       # min learning rate for cosing anneling shedule
+  T_max: 30             # number of epoch before warm restart
   momentum: 0.9          # sgd momentum
   nesterov: True
   w_decay: 0.000        # weight decay
@@ -13,7 +13,7 @@ train:
   report_batch: 1        # every x batches, report loss
   report_epoch: 1        # every x epochs, report validation set
   epsilon_w: 0.001       # class weight w = 1 / (content + epsilon_w)
-  save_summary: False    # Summary of weight histograms for tensorboard
+  save_summary: True    # Summary of weight histograms for tensorboard
   save_scans: True       # False doesn't save anything, True saves some 
                          # sample images (one per batch of the last calculated batch)
                          # in log folder
@@ -26,11 +26,11 @@ train:
 backbone:
   name: "dense_encoder"
   params:
-    input_depth: 5
+    input_depth: 10
     drop_rate: 0.00
     bn_size: 4
     growth_rate: 8
-    num_init_features: 32
+    num_init_features: 128
     block_configuration: 
     - 6
     - 12
@@ -52,7 +52,7 @@ decoder:
     - 6
     - 6
     - 6
-    - 6
+    - 3
   train: True # train decoder?
 
 ################################################################################
