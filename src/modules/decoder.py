@@ -75,12 +75,8 @@ class DenseDecoder(nn.Module):
     bn_size = params["bn_size"]
     drop_rate = params["drop_rate"]
     self.features = nn.Sequential()
-    # self.features = nn.Sequential(OrderedDict([
-    #   ('convT0', nn.ConvTranspose2d(input_depth, num_init_features, kernel_size=7, stride=[1,2],
-    #     padding=3, bias=False)),
-    #   ('norm0', nn.BatchNorm2d(num_init_features)),
-    #   ('relu0', nn.ReLU(inplace=True)),
-    #   ]))
+    decoder_input = TransitionTransposeBlock(input_depth, input_depth)
+    self.features.add_module("decoder_input", decoder_input)
 
     num_features = input_depth
     for i, block_size in enumerate(block_configuration):
@@ -88,17 +84,18 @@ class DenseDecoder(nn.Module):
       self.features.add_module('densetransposeblock%d' % (i + 1), densetransposeblock)
 
       num_features = num_features + block_size * growth_rate
-      if i != len(block_configuration)-1:
-        transitionblock = TransitionTransposeBlock(num_input_features=num_features, 
-            num_output_features=num_features//2)
-        self.features.add_module("transitiontransposeblock%d" % (i+1), transitionblock)
-        num_features = num_features//2
+      # if i != len(block_configuration)-1:
+      transitionblock = TransitionTransposeBlock(num_input_features=num_features, 
+          num_output_features=num_features//2)
+      self.features.add_module("transitiontransposeblock%d" % (i+1), transitionblock)
+      num_features = num_features//2
 
     self.last_depth = num_features
     self.features.add_module("bn_decoder", nn.BatchNorm2d(num_features))
     for m in self.modules():
       if isinstance(m, nn.Conv2d):
-        nn.init.kaiming_normal_(m.weight)
+        gain = nn.init.calculate_gain('relu')
+        nn.init.xavier_normal_(m.weight, gain)
       elif isinstance(m, nn.BatchNorm2d):
         nn.init.constant_(m.weight, 1)
         nn.init.constant_(m.bias, 0)

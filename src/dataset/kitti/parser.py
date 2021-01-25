@@ -111,7 +111,7 @@ class Kitti(Dataset):
                            proj_remission_prev.unsqueeze(0).clone()])
     proj_prev = (proj_prev- self.sensor_img_means[:, None, None]) / self.sensor_img_stds[:, None, None]
     proj_mask_prev = torch.from_numpy(scan.proj_mask).unsqueeze(0).clone()
-    # proj_prev = proj_prev * proj_mask_prev.float()
+    proj_prev = proj_prev * proj_mask_prev.float()
 
     scan.open_scan(curr_scan_file)
     proj_range_curr = torch.from_numpy(scan.proj_range).clone()
@@ -123,7 +123,7 @@ class Kitti(Dataset):
     proj_curr = (proj_curr- self.sensor_img_means[:, None, None]) / self.sensor_img_stds[:, None, None]
 
     proj_mask = torch.from_numpy(scan.proj_mask).unsqueeze(0).clone()
-    # proj_curr = proj_curr * proj_mask.float()
+    proj_curr = proj_curr * proj_mask.float()
     if self.gt:
       proj_labels = torch.from_numpy(mask).float().clone()
       # proj_labels = proj_labels * proj_mask

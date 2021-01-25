@@ -17,7 +17,16 @@ class RangeMaskNet(nn.Module):
     self.backbone = DenseEncoder(encoder_params)
     self.decoder = DenseDecoder(decoder_params, self.backbone.last_depth)
     self.head = nn.Sequential(nn.Dropout2d(p=self.ARCH["head"]["drop_rate"]),
-                              nn.Conv2d(self.decoder.last_depth, 1, kernel_size=3, stride=1, padding=1))
+                              nn.Conv2d(self.decoder.last_depth, 1, kernel_size=3, stride=1, padding=1),
+                              nn.BatchNorm2d(1))
+    for m in self.head.modules():
+      if isinstance(m, nn.Conv2d):
+        gain = nn.init.calculate_gain('sigmoid')
+        nn.init.xavier_normal_(m.weight, gain)
+      elif isinstance(m, nn.BatchNorm2d):
+        nn.init.constant_(m.weight, 1)
+        nn.init.constant_(m.bias, 0)
+
     self.activation = nn.Sigmoid()
     # train backbone?
     if not self.ARCH["backbone"]["train"]:
@@ -91,12 +100,13 @@ class RangeMaskNet(nn.Module):
 
   def forward(self, x, mask=None):
     # y = x[1] - x[0]
+    # y = x[1]
     y = torch.cat(x,1)
     y = self.backbone(y)
     y = self.decoder(y)
     y = self.head(y)
     y = self.activation(y)
-    y = mask * y
+    # y = mask * y
     return y
 
   def save_checkpoint(self, logdir, suffix=""):

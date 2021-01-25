@@ -40,10 +40,10 @@ class Trainer():
     self.info = {"train_update": 0,
                  "train_loss": 0,
                  "train_acc": 0,
-                 "train_iou": 0,
+                 "train_f1": 0,
                  "valid_loss": 0,
                  "valid_acc": 0,
-                 "valid_iou": 0,
+                 "valid_f1": 0,
                  "backbone_lr": 0,
                  "decoder_lr": 0,
                  "head_lr": 0,
@@ -90,10 +90,7 @@ class Trainer():
       self.n_gpus = torch.cuda.device_count()
 
     # loss
-    # w = torch.tensor(22.00)
-    # gamma = torch.tensor(2.00)
-    self.criterion = FocalLoss(alpha=22., gamma=2.).to(self.device)
-    # self.criterion = FocalLoss().to(self.device)
+    self.criterion = FocalLoss(alpha=self.ARCH["train"]["pos_weight"], gamma=2.).to(self.device)
     # loss as dataparallel too (more images in batch)
     if self.n_gpus > 1:
       self.criterion = nn.DataParallel(self.criterion).cuda()  # spread in gpus
@@ -120,9 +117,6 @@ class Trainer():
                                weight_decay=self.ARCH["train"]["w_decay"],
                                nesterov=self.ARCH["train"]["nesterov"])
 
-    # Use warmup learning rate
-    # post decay and step sizes come in epochs and we want it in steps
-    steps_per_epoch = self.parser.get_train_size()
     self.scheduler = optim.lr_scheduler.CosineAnnealingLR(self.optimizer, 
                                                           T_max=self.ARCH["train"]["T_max"], 
                                                           eta_min=self.ARCH["train"]["lr_min"])
@@ -147,17 +141,16 @@ class Trainer():
   def make_log_img(depth, pred, gt):
     # input should be [depth, pred, gt]
     # make range image (normalized to 0,1 for saving)
-    # depth = (cv2.normalize(depth, None, alpha=0, beta=1,
-    #                        norm_type=cv2.NORM_MINMAX,
-    #                        dtype=cv2.CV_32F) * 255.0).astype(np.uint8)
+    depth = (cv2.normalize(depth, None, alpha=0, beta=1,
+                           norm_type=cv2.NORM_MINMAX,
+                           dtype=cv2.CV_32F) * 255.0).astype(np.uint8)
     # # make label prediction
-    # pred = (pred * 255.0).astype(np.uint8)
+    pred = (pred[0,:,:] * 255.0).astype(np.uint8)
     # out_img = np.concatenate([depth[None, :, :], pred], axis=0)
     # # make label gt
-    # gt = (gt * 255.0).astype(np.uint8)
+    gt = (gt[0,:,:] * 255.0).astype(np.uint8)
     # out_img = np.concatenate([out_img, gt], axis=0)
-    pred = (pred[0,:,:] * 255.0).astype(np.uint8)
-    return pred
+    return [depth, pred, gt]
 
   @staticmethod
   def save_to_log(logdir, logger, info, epoch, w_summary=False, model=None, img_summary=False, imgs=[]):
@@ -179,8 +172,12 @@ class Trainer():
       if not os.path.isdir(directory):
         os.makedirs(directory)
       for i, img in enumerate(imgs):
-        name = os.path.join(directory, str(i) + ".png")
-        cv2.imwrite(name, img)
+        name = os.path.join(directory, "epoch_" + str(epoch) + "_depth_"  + str(i) + ".png")
+        cv2.imwrite(name, img[0])
+        name = os.path.join(directory, "epoch_" + str(epoch) + "_pred_"  + str(i) + ".png")
+        cv2.imwrite(name, img[1])
+        name = os.path.join(directory, "epoch_" + str(epoch) + "_gt_"  + str(i) + ".png")
+        cv2.imwrite(name, img[2])
 
   def train(self):
     # best validation loss so far
@@ -195,7 +192,7 @@ class Trainer():
         self.info[name] = g['lr']
 
       # train for 1 epoch
-      loss, update_mean = self.train_epoch(train_loader=self.parser.get_train_set(),
+      loss, update_mean, f1, accuracy = self.train_epoch(train_loader=self.parser.get_train_set(),
                                                      model=self.model,
                                                      criterion=self.criterion,
                                                      evaluator=self.evaluator,
@@ -207,10 +204,12 @@ class Trainer():
       # update info
       self.info["train_update"] = update_mean
       self.info["train_loss"] = loss
+      self.info["train_f1"] = f1
+      self.info["train_acc"] = accuracy
       if epoch % self.ARCH["train"]["report_epoch"] == 0:
         # evaluate on validation set
         print("*" * 80)
-        loss, f1, rand_img  = self.validate(val_loader=self.parser.get_valid_set(),
+        loss, f1, rand_img, accuracy  = self.validate(val_loader=self.parser.get_valid_set(),
                                                  model=self.model,
                                                  criterion=self.criterion,
                                                  evaluator=self.evaluator,
@@ -218,7 +217,8 @@ class Trainer():
 
         # update info
         self.info["valid_loss"] = loss
-        self.info["valid_iou"] = f1
+        self.info["valid_f1"] = f1
+        self.info["valid_acc"] = accuracy
         # remember best iou and save checkpoint
         if f1 > best_f1_score:
           print("Best f1 score in validation so far, save model!")
@@ -250,6 +250,7 @@ class Trainer():
     f1 = AverageMeter()
     precision = AverageMeter()
     recall = AverageMeter()
+    accuracy = AverageMeter()
     update_ratio_meter = AverageMeter()
 
     # empty the cache to train now
@@ -271,7 +272,7 @@ class Trainer():
 
       # compute output
       output = model(in_vol, proj_mask)
-      loss = criterion(output, proj_labels)
+      loss = criterion(output, proj_labels, proj_mask)
 
       # compute gradient and do SGD step
       optimizer.zero_grad()
@@ -287,13 +288,15 @@ class Trainer():
         evaluator.reset()
         # pred = (model.activation(output) > 0.5).long()
         pred = (output > 0.5).long()
-        evaluator.addBatch(pred, proj_labels)
+        evaluator.addBatch(pred, proj_labels, proj_mask)
         p, r, f = evaluator.getScores()
+        acc = evaluator.getacc()
       batch_size = in_vol[0].size(0)
       losses.update(loss.item(), batch_size)
       precision.update(p.item(), batch_size)
       recall.update(r.item(), batch_size)
       f1.update(f.item(), batch_size)
+      accuracy.update(acc.item(), batch_size)
       # measure elapsed time
       batch_time.update(time.time() - end)
       end = time.time()
@@ -340,7 +343,7 @@ class Trainer():
       # step scheduler
       scheduler.step()
 
-    return losses.avg, update_ratio_meter.avg
+    return losses.avg, update_ratio_meter.avg, f1.avg, accuracy.avg 
 
   def validate(self, val_loader, model, criterion, evaluator, save_scans):
     batch_time = AverageMeter()
@@ -368,11 +371,11 @@ class Trainer():
 
         # compute output
         output = model(in_vol, proj_mask)
-        loss = criterion(output, proj_labels)
+        loss = criterion(output, proj_labels, proj_mask)
         # pred = (model.activation(output) > 0.5).long()
         pred = (output > 0.5).long()
         # measure accuracy and record loss
-        evaluator.addBatch(pred, proj_labels)
+        evaluator.addBatch(pred, proj_labels, proj_mask)
         batch_size = in_vol[0].size(0)
         losses.update(loss.item(), batch_size)
 
@@ -405,4 +408,4 @@ class Trainer():
                                            recall=r,
                                            f1=f1,
                                            acc=accuracy))
-    return losses.avg, f1, rand_imgs
+    return losses.avg, f1, rand_imgs, accuracy

@@ -94,23 +94,23 @@ class DenseEncoder(nn.Module):
       self.features.add_module('denseblock%d' % (i + 1), denseblock)
 
       num_features = num_features + block_size * growth_rate
-      transitionblock = TransitionBlock(num_input_features=num_features, 
-          num_output_features=num_features//2)
-      self.features.add_module("transitionblock%d" % (i+1), transitionblock)
-      num_features = num_features//2
+      if i != len(block_configuration)-1:
+        transitionblock = TransitionBlock(num_input_features=num_features, 
+            num_output_features=num_features//2)
+        self.features.add_module("transitionblock%d" % (i+1), transitionblock)
+        num_features = num_features//2
 
-    self.last_depth = num_features
-    self.features.add_module("finalbatchnorm", nn.BatchNorm2d(num_features))
+    self.features.add_module('encoder_out', nn.Conv2d(num_features, 1, kernel_size=1,
+                                                      stride=1, padding=0,
+                                                      bias=False))
+    self.last_depth = 1
     for m in self.modules():
       if isinstance(m, nn.Conv2d):
-        nn.init.kaiming_normal_(m.weight)
+        gain = nn.init.calculate_gain('relu')
+        nn.init.xavier_normal_(m.weight, gain)
       elif isinstance(m, nn.BatchNorm2d):
         nn.init.constant_(m.weight, 1)
         nn.init.constant_(m.bias, 0)
-      elif isinstance(m, nn.Linear):
-        nn.init.constant_(m.bias, 0)
-
   def forward(self, x):
-    preout = self.features(x)
-    out = F.relu(preout, inplace=True)
+    out = self.features(x)
     return out

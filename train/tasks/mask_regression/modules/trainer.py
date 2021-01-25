@@ -97,7 +97,7 @@ class Trainer():
     # loss
     if "loss" in self.ARCH["train"].keys() and self.ARCH["train"]["loss"] == "xentropy":
       w = torch.zeros(1,dtype=torch.float)
-      w[0] = 1e2
+      w[0] = 14.0
       self.criterion = nn.BCEWithLogitsLoss(pos_weight=w).to(self.device)
     else:
       raise Exception('Loss not defined in config file')

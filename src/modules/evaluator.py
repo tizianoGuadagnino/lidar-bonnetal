@@ -9,13 +9,17 @@ class Evaluator:
   def __init__(self, device):
     self.device = device
     self.reset()
+    self.conf_matrix = torch.zeros((2,2), device=self.device)
+    self.cc = 0
+    self.total = 0
 
   def reset(self):
-    self.conf_matrix = torch.zeros((2,2), device=self.device).long()
-    self.ones = None
+    self.conf_matrix = torch.zeros((2,2), device=self.device)
     self.last_scan_size = None  # for when variable scan size is used
+    self.cc = 0
+    self.total = 0
 
-  def addBatch(self, x, y):  # x=preds, y=targets
+  def addBatch(self, x, y, mask):  # x=preds, y=targets
     # if numpy, pass to pytorch
     # to tensor
     if isinstance(x, np.ndarray):
@@ -23,27 +27,28 @@ class Evaluator:
     if isinstance(y, np.ndarray):
       y = torch.from_numpy(np.array(y)).long().to(self.device)
 
-    long_x = x.long()
-    long_y = y.long()
+    long_x = (mask * x).long()
+    long_y = (mask * y).long()
     # sizes should be "batch_size x H x W"
-    x_row = long_x.reshape(-1)  # de-batchify
-    y_row = long_y.reshape(-1)  # de-batchify
+    y_pred = long_x.reshape(-1)  # de-batchify
+    y_true = long_y.reshape(-1)  # de-batchify
 
-    # print("Positive in labels ", torch.count_nonzero(y_row))
-    comp = (x_row == y_row).long()
-
+    tp = (y_true * y_pred).sum().to(torch.float32)
+    tn = ((1 - y_true) * (1 - y_pred)).sum().to(torch.float32)
+    fp = ((1 - y_true) * y_pred).sum().to(torch.float32)
+    fn = (y_true * (1 - y_pred)).sum().to(torch.float32)
     # count true positives
-    self.conf_matrix[0,0] += torch.count_nonzero(comp[y_row == 1])
+    self.conf_matrix[0,0] += tp
     # count true negatives
-    self.conf_matrix[1,1] += torch.count_nonzero(comp[y_row == 0])
+    self.conf_matrix[1,1] += tn
     # count false positives
-    self.conf_matrix[0,1] += torch.count_nonzero(comp[y_row == 0] == 0)
+    self.conf_matrix[0,1] += fp
     # count false negatives
-    self.conf_matrix[1,0] +=  torch.count_nonzero(comp[y_row == 1] == 0)
+    self.conf_matrix[1,0] += fn
 
   def getStats(self):
     # remove fp and fn from confusion on the ignore classes cols and rows
-    conf = self.conf_matrix.clone().double()
+    conf = self.conf_matrix.clone()
     tp = conf[0,0]
     fp = conf[0,1]
     fn = conf[1,0]
@@ -79,7 +84,7 @@ if __name__ == "__main__":
   argmax[3:5, 3:5] = 1
 
   # make evaluator
-  eval = iouEval(nclasses, torch.device('cpu'), ignore)
+  eval = iouEval(torch.device('cpu'))
 
   # run
   eval.addBatch(argmax, lbl)
