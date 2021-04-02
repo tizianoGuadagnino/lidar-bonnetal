@@ -90,7 +90,8 @@ class Trainer():
       self.n_gpus = torch.cuda.device_count()
 
     # loss
-    self.criterion = FocalLoss(alpha=self.ARCH["train"]["pos_weight"], gamma=2.).to(self.device)
+    # self.criterion = FocalLoss(alpha=self.ARCH["train"]["pos_weight"], gamma=2.).to(self.device)
+    self.criterion = nn.BCELoss().to(self.device)
     # loss as dataparallel too (more images in batch)
     if self.n_gpus > 1:
       self.criterion = nn.DataParallel(self.criterion).cuda()  # spread in gpus
@@ -102,14 +103,6 @@ class Trainer():
       self.lr_group_names.append("backbone_lr")
       self.train_dicts.append(
           {'params': self.model_single.backbone.parameters()})
-    if self.ARCH["decoder"]["train"]:
-      self.lr_group_names.append("decoder_lr")
-      self.train_dicts.append(
-          {'params': self.model_single.decoder.parameters()})
-    if self.ARCH["head"]["train"]:
-      self.lr_group_names.append("head_lr")
-      self.train_dicts.append({'params': self.model_single.head.parameters()})
-
     # Use SGD optimizer to train
     self.optimizer = optim.SGD(self.train_dicts,
                                lr=self.ARCH["train"]["lr"],
@@ -117,9 +110,9 @@ class Trainer():
                                weight_decay=self.ARCH["train"]["w_decay"],
                                nesterov=self.ARCH["train"]["nesterov"])
 
-    self.scheduler = optim.lr_scheduler.CosineAnnealingLR(self.optimizer, 
-                                                          T_max=self.ARCH["train"]["T_max"], 
-                                                          eta_min=self.ARCH["train"]["lr_min"])
+    # self.scheduler = optim.lr_scheduler.CosineAnnealingLR(self.optimizer, 
+    #                                                       T_max=self.ARCH["train"]["T_max"], 
+    #                                                       eta_min=self.ARCH["train"]["lr_min"])
     # up_steps = int(self.ARCH["train"]["wup_epochs"] * steps_per_epoch)
     # final_decay = self.ARCH["train"]["lr_decay"] ** (1/steps_per_epoch)
     # self.scheduler = warmupLR(optimizer=self.optimizer,
@@ -198,7 +191,8 @@ class Trainer():
                                                      evaluator=self.evaluator,
                                                      optimizer=self.optimizer,
                                                      epoch=epoch,
-                                                     scheduler=self.scheduler,
+                                                     # scheduler=self.scheduler,
+                                                     scheduler=None,
                                                      report=self.ARCH["train"]["report_batch"],
                                                      show_scans=self.ARCH["train"]["show_scans"])
       # update info
@@ -265,14 +259,15 @@ class Trainer():
         # measure data loading time
       data_time.update(time.time() - end)
       if not self.multi_gpu and self.gpu:
-        in_vol = [x.cuda() for x in in_vol]
+        # in_vol = [x.cuda() for x in in_vol]
+        in_vol = in_vol.cuda()
         proj_mask = proj_mask.cuda()
       if self.gpu:
         proj_labels = proj_labels.cuda(non_blocking=True)
 
       # compute output
       output = model(in_vol, proj_mask)
-      loss = criterion(output, proj_labels, proj_mask)
+      loss = criterion(output, proj_labels)#, proj_mask)
 
       # compute gradient and do SGD step
       optimizer.zero_grad()
@@ -341,7 +336,7 @@ class Trainer():
                   lr=lr, umean=update_mean, ustd=update_std))
 
       # step scheduler
-      scheduler.step()
+      # scheduler.step()
 
     return losses.avg, update_ratio_meter.avg, f1.avg, accuracy.avg 
 
@@ -364,14 +359,15 @@ class Trainer():
       end = time.time()
       for i, (in_vol, proj_mask, proj_labels, path_seq, path_name) in enumerate(val_loader):
         if not self.multi_gpu and self.gpu:
-          in_vol = [x.cuda() for x in in_vol]
+          # in_vol = [x.cuda() for x in in_vol]
+          in_vol = in_vol.cuda()
           proj_mask = proj_mask.cuda()
         if self.gpu:
           proj_labels = proj_labels.cuda(non_blocking=True)
 
         # compute output
         output = model(in_vol, proj_mask)
-        loss = criterion(output, proj_labels, proj_mask)
+        loss = criterion(output, proj_labels)#, proj_mask)
         # pred = (model.activation(output) > 0.5).long()
         pred = (output > 0.5).long()
         # measure accuracy and record loss

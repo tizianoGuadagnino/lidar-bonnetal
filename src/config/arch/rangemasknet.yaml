@@ -2,12 +2,12 @@
 # training parameters
 ################################################################################
 train:
-  max_epochs: 1000
-  lr: 0.01              # sgd learning rat
-  lr_min: 0.01       # min learning rate for cosing anneling shedule
+  max_epochs: 300
+  lr: 0.0001              # sgd learning rat
+  lr_min: 0.0001       # min learning rate for cosing anneling shedule
   T_max: 1             # number of epoch before warm restart
   momentum: 0.9          # sgd momentum
-  nesterov: False
+  nesterov: True
   w_decay: 0.000        # weight decay
   batch_size: 1          # batch size
   report_batch: 1        # every x batches, report loss
@@ -28,39 +28,9 @@ backbone:
   params:
     input_depth: 5
     drop_rate: 0.00
-    bn_size: 4
-    growth_rate: 8
-    num_init_features: 64
-    block_configuration: 
-    - 6
-    - 12
-    - 24
-    - 16
+    num_init_features: 32
+    do_batch_norm: False
   train: True # train backbone?
-
-################################################################################
-# decoder parameters
-################################################################################
-decoder:
-  name: "dense_decoder"
-  params:
-    drop_rate: 0.00
-    bn_size: 4
-    growth_rate: 8
-    block_configuration: 
-    - 16
-    - 24
-    - 12
-    - 6
-  train: True # train decoder?
-
-################################################################################
-# classification head parameters
-################################################################################
-head:
-  name: "prediction"
-  train: True
-  drop_rate: 0.00
 
 ################################################################################
 # classification head parameters
@@ -80,14 +50,26 @@ dataset:
       width: 1024
       height: 64
     img_means: #range,x,y,z,signal
-      - 12.12
-      - 10.88
-      - 0.23
-      - -1.04
-      - 0.21
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
     img_stds: #range,x,y,z,signal
-      - 12.32
-      - 11.47
-      - 6.91
-      - 0.86
-      - 0.16
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+    # img_means: #range,x,y,z,signal
+    #   - 12.12
+    #   - 10.88
+    #   - 0.23
+    #   - -1.04
+    #   - 0.21
+    # img_stds: #range,x,y,z,signal
+    #   - 12.32
+    #   - 11.47
+    #   - 6.91
+    #   - 0.86
+    #   - 0.16
