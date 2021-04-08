@@ -30,7 +30,7 @@ class L2Net(nn.Module):
     self.conv6 = torch.nn.Conv2d(4*num_init_features, 4*num_init_features, 3, stride=1, padding=1)
     self.bn6 = nn.BatchNorm2d(4*num_init_features, affine=do_batch_norm)
 
-    self.conv7 = torch.nn.Conv2d(4*num_init_features, 1, int(input_depth/4))
+    self.conv7 = torch.nn.Conv2d(4*num_init_features, 1, 1)
     self.bn7 = nn.BatchNorm2d(1, affine=do_batch_norm)
 
     self.relu = nn.ReLU()

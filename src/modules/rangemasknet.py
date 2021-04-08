@@ -44,10 +44,9 @@ class RangeMaskNet(nn.Module):
       print("No path to pretrained, using random init.")
 
   def forward(self, x, mask=None):
-    # y = torch.cat(x,1)
     y = self.backbone(x)
-    y = self.activation(y)
-    # y = mask * y
+    # y = self.activation(y)
+    y = mask * y
     return y
 
   def save_checkpoint(self, logdir, suffix=""):

@@ -91,7 +91,9 @@ class Trainer():
 
     # loss
     # self.criterion = FocalLoss(alpha=self.ARCH["train"]["pos_weight"], gamma=2.).to(self.device)
-    self.criterion = nn.BCELoss().to(self.device)
+    # self.criterion = nn.BCELoss().to(self.device)
+    class_weight = torch.tensor([self.ARCH["train"]["pos_weight"]])
+    self.criterion = nn.BCEWithLogitsLoss(pos_weight=class_weight).to(self.device)
     # loss as dataparallel too (more images in batch)
     if self.n_gpus > 1:
       self.criterion = nn.DataParallel(self.criterion).cuda()  # spread in gpus
@@ -104,11 +106,13 @@ class Trainer():
       self.train_dicts.append(
           {'params': self.model_single.backbone.parameters()})
     # Use SGD optimizer to train
-    self.optimizer = optim.SGD(self.train_dicts,
-                               lr=self.ARCH["train"]["lr"],
-                               momentum=self.ARCH["train"]["momentum"],
-                               weight_decay=self.ARCH["train"]["w_decay"],
-                               nesterov=self.ARCH["train"]["nesterov"])
+    self.optimizer = optim.Adam(self.train_dicts,
+                               lr=self.ARCH["train"]["lr"])
+    # self.optimizer = optim.SGD(self.train_dicts,
+    #                            lr=self.ARCH["train"]["lr"],
+    #                            momentum=self.ARCH["train"]["momentum"],
+    #                            weight_decay=self.ARCH["train"]["w_decay"],
+    #                            nesterov=self.ARCH["train"]["nesterov"])
 
     # self.scheduler = optim.lr_scheduler.CosineAnnealingLR(self.optimizer, 
     #                                                       T_max=self.ARCH["train"]["T_max"], 
@@ -131,22 +135,22 @@ class Trainer():
     return color_range.reshape(256, 1, 3)
 
   @staticmethod
-  def make_log_img(depth, pred, gt):
+  def make_log_img(depth, mask, pred, gt):
     # input should be [depth, pred, gt]
     # make range image (normalized to 0,1 for saving)
-    depth = (cv2.normalize(depth, None, alpha=0, beta=1,
-                           norm_type=cv2.NORM_MINMAX,
-                           dtype=cv2.CV_32F) * 255.0).astype(np.uint8)
-    y_pred = pred[0,:,:]
-    y_pred[y_pred>0.5] = 1
-    y_pred[y_pred<=0.5] = 0
+    print(depth.shape)
+    print(mask.shape)
     # # make label prediction
-    pred = (y_pred * 255.0).astype(np.uint8)
+    hard_sigmoid_out = np.zeros(pred.shape)
+    hard_sigmoid_out[pred>=0] = 1
+    y_pred = (hard_sigmoid_out * mask * 255.0).astype(np.uint8)
+    print(y_pred.shape)
     # out_img = np.concatenate([depth[None, :, :], pred], axis=0)
     # # make label gt
-    gt = (gt[0,:,:] * 255.0).astype(np.uint8)
+    y = (gt * 255.0).astype(np.uint8)
+    print(y.shape)
     # out_img = np.concatenate([out_img, gt], axis=0)
-    return [depth, pred, gt]
+    return [depth, y_pred, y]
 
   @staticmethod
   def save_to_log(logdir, logger, info, epoch, w_summary=False, model=None, img_summary=False, imgs=[]):
@@ -339,7 +343,8 @@ class Trainer():
                   lr=lr, umean=update_mean, ustd=update_std))
 
       # step scheduler
-      # scheduler.step()
+      if scheduler is not None:
+          scheduler.step()
 
     return losses.avg, update_ratio_meter.avg, f1.avg, accuracy.avg 
 
@@ -381,10 +386,12 @@ class Trainer():
         if save_scans:
           # get the first scan in batch and project points
           # mask_np = proj_mask[0].cpu().numpy()
-          depth_np = in_vol[0][0][0].cpu().numpy()
-          pred_np = output[0].cpu().numpy()
-          gt_np = proj_labels[0].cpu().numpy()
+          depth_np = in_vol[0][0].cpu().numpy()
+          pred_np = output[0][0].cpu().numpy()
+          gt_np = proj_labels[0][0].cpu().numpy()
+          mask_np = proj_mask[0][0].cpu().numpy()
           out = Trainer.make_log_img(depth_np,
+                                     mask_np,
                                      pred_np,
                                      gt_np) 
           rand_imgs.append(out)

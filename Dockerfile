@@ -57,9 +57,9 @@ RUN apt update && \
   apt autoremove --purge -y && \
   apt clean -y
 # Set the working directory
-WORKDIR /home/developer/pcw-net
 # make user and home
 USER developer
 ENV HOME /home/developer
+WORKDIR /home/developer/pcw-net
 ADD . /home/developer/pcw-net
 
