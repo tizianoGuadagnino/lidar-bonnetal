@@ -2,8 +2,8 @@
 # training parameters
 ################################################################################
 train:
-  max_epochs: 300
-  lr: 0.0001              # sgd learning rat
+  max_epochs: 100
+  lr: 0.001              # sgd learning rat
   lr_min: 0.0001       # min learning rate for cosing anneling shedule
   T_max: 1             # number of epoch before warm restart
   momentum: 0.9          # sgd momentum

@@ -137,8 +137,11 @@ class Trainer():
     depth = (cv2.normalize(depth, None, alpha=0, beta=1,
                            norm_type=cv2.NORM_MINMAX,
                            dtype=cv2.CV_32F) * 255.0).astype(np.uint8)
+    y_pred = pred[0,:,:]
+    y_pred[y_pred>0.5] = 1
+    y_pred[y_pred<=0.5] = 0
     # # make label prediction
-    pred = (pred[0,:,:] * 255.0).astype(np.uint8)
+    pred = (y_pred * 255.0).astype(np.uint8)
     # out_img = np.concatenate([depth[None, :, :], pred], axis=0)
     # # make label gt
     gt = (gt[0,:,:] * 255.0).astype(np.uint8)
