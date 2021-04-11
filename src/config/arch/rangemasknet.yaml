@@ -2,18 +2,18 @@
 # training parameters
 ################################################################################
 train:
-  max_epochs: 200
-  lr: 0.001              # sgd learning rat
+  max_epochs: 50
+  lr: 0.0003              # sgd learning rat
   lr_min: 0.0001       # min learning rate for cosing anneling shedule
   T_max: 10             # number of epoch before warm restart
   momentum: 0.9          # sgd momentum
   nesterov: True
   w_decay: 0.000        # weight decay
   wup_epochs: 1
-  batch_size: 1          # batch size
+  batch_size: 2          # batch size
   report_batch: 1        # every x batches, report loss
   report_epoch: 1        # every x epochs, report validation set
-  pos_weight: 1.34       # positive class weight 
+  pos_weight: 3.68       # positive class weight 
   save_summary: True    # Summary of weight histograms for tensorboard
   save_scans: True       # False doesn't save anything, True saves some 
                          # sample images (one per batch of the last calculated batch)
@@ -30,7 +30,7 @@ backbone:
     input_depth: 10
     drop_rate: 0.00
     num_init_features: 32
-    do_batch_norm: False
+    do_batch_norm: True
   train: True # train backbone?
 
 ################################################################################

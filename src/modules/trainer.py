@@ -138,17 +138,13 @@ class Trainer():
   def make_log_img(depth, mask, pred, gt):
     # input should be [depth, pred, gt]
     # make range image (normalized to 0,1 for saving)
-    print(depth.shape)
-    print(mask.shape)
     # # make label prediction
     hard_sigmoid_out = np.zeros(pred.shape)
-    hard_sigmoid_out[pred>=0] = 1
+    hard_sigmoid_out[pred>0] = 1
     y_pred = (hard_sigmoid_out * mask * 255.0).astype(np.uint8)
-    print(y_pred.shape)
     # out_img = np.concatenate([depth[None, :, :], pred], axis=0)
     # # make label gt
     y = (gt * 255.0).astype(np.uint8)
-    print(y.shape)
     # out_img = np.concatenate([out_img, gt], axis=0)
     return [depth, y_pred, y]
 
@@ -288,8 +284,8 @@ class Trainer():
       # measure accuracy and record loss
       with torch.no_grad():
         evaluator.reset()
-        # pred = (model.activation(output) > 0.5).long()
-        pred = (output > 0.5).long()
+        pred = (model.activation(output) > 0.5).long()
+        # pred = (output > 0.5).long()
         evaluator.addBatch(pred, proj_labels, proj_mask)
         p, r, f = evaluator.getScores()
         acc = evaluator.getacc()
@@ -376,8 +372,8 @@ class Trainer():
         # compute output
         output = model(in_vol, proj_mask)
         loss = criterion(output, proj_labels)#, proj_mask)
-        # pred = (model.activation(output) > 0.5).long()
-        pred = (output > 0.5).long()
+        pred = (model.activation(output) > 0.5).long()
+        # pred = (output > 0.5).long()
         # measure accuracy and record loss
         evaluator.addBatch(pred, proj_labels, proj_mask)
         batch_size = in_vol[0].size(0)
