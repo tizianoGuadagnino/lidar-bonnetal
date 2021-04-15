@@ -12,25 +12,25 @@ class L2Net(nn.Module):
     num_init_features = params["num_init_features"]
     do_batch_norm = params["do_batch_norm"]
     # setup network
-    self.conv1 = torch.nn.Conv2d(input_depth, num_init_features, 3, stride=1, padding=1)
+    self.conv1 = torch.nn.Conv2d(input_depth, num_init_features, kernel_size=3, stride=1, padding=1)
     self.bn1 = nn.BatchNorm2d(num_init_features, affine=do_batch_norm)
 
-    self.conv2 = torch.nn.Conv2d(num_init_features, num_init_features, 3, stride=1, padding=1)
+    self.conv2 = torch.nn.Conv2d(num_init_features, num_init_features, kernel_size=3,dilation=2, stride=1, padding=2)
     self.bn2 = nn.BatchNorm2d(num_init_features, affine=do_batch_norm)
 
-    self.conv3 = torch.nn.Conv2d(num_init_features, 2*num_init_features, 3, stride=1, padding=1)
+    self.conv3 = torch.nn.Conv2d(num_init_features, 2*num_init_features, kernel_size=3, stride=1, padding=1)
     self.bn3 = nn.BatchNorm2d(2*num_init_features, affine=do_batch_norm)
 
-    self.conv4 = torch.nn.Conv2d(2*num_init_features, 2*num_init_features, 3, stride=1, padding=1)
+    self.conv4 = torch.nn.Conv2d(2*num_init_features, 2*num_init_features, kernel_size=3, dilation=2, stride=1, padding=2)
     self.bn4 = nn.BatchNorm2d(2*num_init_features, affine=do_batch_norm)
 
-    self.conv5 = torch.nn.Conv2d(2*num_init_features, 4*num_init_features, 3, stride=1, padding=1)
+    self.conv5 = torch.nn.Conv2d(2*num_init_features, 4*num_init_features, kernel_size=3, stride=1, padding=1)
     self.bn5 = nn.BatchNorm2d(4*num_init_features, affine=do_batch_norm)
 
-    self.conv6 = torch.nn.Conv2d(4*num_init_features, 4*num_init_features, 3, stride=1, padding=1)
+    self.conv6 = torch.nn.Conv2d(4*num_init_features, 4*num_init_features, kernel_size=3, stride=1, padding=1)
     self.bn6 = nn.BatchNorm2d(4*num_init_features, affine=do_batch_norm)
 
-    self.conv7 = torch.nn.Conv2d(4*num_init_features, 1, 1)
+    self.conv7 = torch.nn.Conv2d(4*num_init_features, 1,kernel_size=1)
     self.bn7 = nn.BatchNorm2d(1, affine=do_batch_norm)
 
     self.relu = nn.ReLU()

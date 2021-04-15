@@ -126,7 +126,7 @@ class Kitti(Dataset):
     proj_next = proj_next * proj_mask.float()
     if self.gt:
       proj_labels = torch.from_numpy(mask).float().clone()
-      proj_labels = proj_labels * proj_mask_current
+      proj_labels = proj_labels * proj_mask
     else:
       proj_labels = []
 
@@ -138,9 +138,9 @@ class Kitti(Dataset):
     # print("path_norm: ", path_norm)
     # print("path_seq", path_seq)
     # print("path_name", path_name)
-    proj = torch.cat((proj_current, proj_next),dim=0)
+    proj = torch.cat((proj_next, proj_current),dim=0)
 
-    return proj, proj_mask_current, proj_labels, path_seq, path_name
+    return proj, proj_mask, proj_labels, path_seq, path_name
 
   def __len__(self):
     return len(self.mask_files)

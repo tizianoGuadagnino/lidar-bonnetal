@@ -2,8 +2,8 @@
 # training parameters
 ################################################################################
 train:
-  max_epochs: 50
-  lr: 0.0003              # sgd learning rat
+  max_epochs: 3
+  lr: 0.001              # sgd learning rat
   lr_min: 0.0001       # min learning rate for cosing anneling shedule
   T_max: 10             # number of epoch before warm restart
   momentum: 0.9          # sgd momentum
@@ -13,7 +13,7 @@ train:
   batch_size: 2          # batch size
   report_batch: 1        # every x batches, report loss
   report_epoch: 1        # every x epochs, report validation set
-  pos_weight: 3.68       # positive class weight 
+  pos_weight: 0.6       # positive class weight 
   save_summary: True    # Summary of weight histograms for tensorboard
   save_scans: True       # False doesn't save anything, True saves some 
                          # sample images (one per batch of the last calculated batch)
